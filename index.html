@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaScratch v1.27</title>
+    <title>IdeaScratch v1.28</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -35,11 +35,10 @@
             border-radius: 50%; background-color: rgba(0, 0, 0, 0.5); transition: all 0.1s ease-in-out; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); z-index: 10;
         }
 
-        /* UPDATED: Repositioned Hitbox with visible border for alignment */
+        /* UPDATED: Shifted up to target BOOT instead of RESET */
         #sim-boot-hitbox {
             position: absolute;
-            /* Shifted down from 7.5% to 27% */
-            top: 27%; 
+            top: 17.5%; /* Changed from 27% to 17.5% */
             left: 88.5%; 
             
             width: 24px; 
@@ -49,7 +48,6 @@
             cursor: pointer;
             z-index: 20;
             background-color: rgba(255, 255, 255, 0); 
-            /* Added a faint border so you can see exactly where it is */
             border: 1px dashed rgba(0, 0, 0, 0.4); 
             transition: background-color 0.1s;
         }
@@ -84,7 +82,7 @@
 </head>
 <body>
 
-    <h2>IdeaScratch v1.27</h2>
+    <h2>IdeaScratch v1.28</h2>
 
     <div id="app-layout">
         
@@ -149,7 +147,6 @@
     </xml>
 
     <script>
-        // --- 1. BLOCK DEFINITIONS ---
         Blockly.common.defineBlocksWithJsonArray([
             {
                 "type": "ib_pixel",
@@ -213,7 +210,6 @@
             }
         ]);
 
-        // --- 2. PYTHON GENERATORS ---
         python.pythonGenerator.forBlock['ib_pixel'] = function(block) {
             return `ib.pixel = (${block.getFieldValue('COLOUR')})\n`;
         };
@@ -241,7 +237,6 @@
             return [`event.${state}`, python.Order.ATOMIC];
         };
 
-        // --- 3. JAVASCRIPT SIMULATOR GENERATORS ---
         javascript.javascriptGenerator.forBlock['ib_pixel'] = function(block) {
             return `setPixelColor('rgb(${block.getFieldValue('COLOUR')})');\n`;
         };
@@ -270,7 +265,6 @@
             return `printToConsole(${msg}, false, 'normal');\n`;
         };
 
-        // --- 4. WORKSPACE INITIALIZATION ---
         const workspace = Blockly.inject('blocklyDiv', {
             toolbox: document.getElementById('toolbox'),
             grid: {spacing: 20, length: 3, colour: '#ccc', snap: true},
@@ -342,7 +336,6 @@
             }
         }
 
-        // --- 5. SIMULATOR & CONSOLE LOGIC ---
         let simIsRunning = false;
         let simEventQueue = []; 
         
@@ -421,7 +414,6 @@
             printToConsole("--- Simulator Stopped ---", false, 'sys');
         }
 
-        // --- 6. HARDWARE SERIAL LOGIC ---
         let boardPort = null;
         let boardWriter = null;
         let serialReader = null;
