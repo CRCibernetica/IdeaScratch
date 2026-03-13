@@ -45,11 +45,11 @@ h2 { margin-top: 0; color: #333; }
 .ide-panel { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 0; height: 100%; }
 .hardware-controls { display: flex; gap: 10px; align-items: center; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #28a745;}
 
-button.hw-btn { padding: 10px 20px; border-radius: 5px; border: none; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+button.hw-btn { padding: 10px 20px; border-radius: 5px; border: none; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s; background: #6c757d; }
+button.hw-btn:hover { background: #5a6268; }
 button.hw-btn:disabled { background: #ccc !important; cursor: not-allowed; }
 
-#toggleSidebarBtn { background: #6c757d; margin-right: 15px; }
-#toggleSidebarBtn:hover { background: #5a6268; }
+#toggleSidebarBtn { margin-right: 15px; }
 #connectBtn { background: #007bff; }
 #connectBtn:hover { background: #0056b3; }
 #runBtn { background: #28a745; }
