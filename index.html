@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaScratch v1.28</title>
+    <title>IdeaScratch v1.29</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -35,24 +35,25 @@
             border-radius: 50%; background-color: rgba(0, 0, 0, 0.5); transition: all 0.1s ease-in-out; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); z-index: 10;
         }
 
-        /* UPDATED: Shifted up to target BOOT instead of RESET */
+        /* UPDATED: Mathematically Aligned to SVG path29472! */
         #sim-boot-hitbox {
             position: absolute;
-            top: 17.5%; /* Changed from 27% to 17.5% */
-            left: 88.5%; 
+            top: 16.7%; 
+            left: 93.1%; 
             
-            width: 24px; 
-            height: 18px; 
+            width: 20px; 
+            height: 32px; 
             transform: translate(-50%, -50%);
             border-radius: 4px;
             cursor: pointer;
             z-index: 20;
             background-color: rgba(255, 255, 255, 0); 
-            border: 1px dashed rgba(0, 0, 0, 0.4); 
+            /* Bright red border to verify alignment easily */
+            border: 2px dashed rgba(255, 0, 0, 0.6); 
             transition: background-color 0.1s;
         }
-        #sim-boot-hitbox:hover { background-color: rgba(255, 255, 255, 0.4); }
-        #sim-boot-hitbox:active { background-color: rgba(0, 0, 0, 0.4); }
+        #sim-boot-hitbox:hover { background-color: rgba(255, 255, 255, 0.3); }
+        #sim-boot-hitbox:active { background-color: rgba(0, 0, 0, 0.5); }
 
         .ide-panel { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 0; height: 100%; }
         .hardware-controls { display: flex; gap: 10px; align-items: center; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #28a745;}
@@ -82,7 +83,7 @@
 </head>
 <body>
 
-    <h2>IdeaScratch v1.28</h2>
+    <h2>IdeaScratch v1.29</h2>
 
     <div id="app-layout">
         
