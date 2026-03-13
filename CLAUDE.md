@@ -17,18 +17,27 @@ Open `index.html` directly in a browser — no build step, no server, no package
 
 ## Architecture
 
-The entire application lives in a single file: **`index.html`**. The companion file **`ideaboard.svg`** is the visual board diagram embedded in the simulator panel.
+The companion file **`ideaboard.svg`** is the visual board diagram embedded in the simulator panel.
 
-### Key sections within `index.html`
+## Versioning
 
-| Lines (approx) | Purpose |
+The version number appears in two places and **must be updated on every commit**:
+- `index.html` — `<title>` tag and `<h2>` heading (e.g. `IdeaScratch v1.30`)
+- `CLAUDE.md` — project overview line
+
+Increment the minor version (e.g. v1.30 → v1.31) for each change unless the user specifies otherwise.
+
+### File structure
+
+| File | Purpose |
 |---|---|
-| 1–148 | HTML structure + CSS layout (sidebar, workspace panels, console) |
-| 149–211 | Custom Blockly **block definitions** (`ib_pixel`, `time_sleep`, `controls_forever`, `ib_event_handler`, `ib_event_state`, `text_print`) |
-| 213–259 | **Code generators** — dual generators per block: one for CircuitPython (hardware), one for async JavaScript (simulation) |
-| 260–330 | Blockly workspace **initialization** and default workspace XML |
-| 331–419 | **Simulator** logic (`simIsRunning`, `simEventQueue`, `setPixelColor`, `printToConsole`, async JS execution) |
-| 421–536 | **Web Serial** hardware communication (`toggleConnection`, `readLoop`, `runCode`, `stopCode`) |
+| `index.html` | HTML structure, toolbox XML, script/link tags |
+| `css/styles.css` | All styles |
+| `js/blocks.js` | Custom Blockly block definitions |
+| `js/generators.js` | Python + JS code generators for each block |
+| `js/simulator.js` | Simulator state, pixel, console, boot button events |
+| `js/serial.js` | Web Serial connection, flash, read loop |
+| `js/workspace.js` | Blockly init, default XML, resize logic, `toggleSidebar` — loads last |
 
 ### Dual-path execution model
 
