@@ -17,7 +17,7 @@
         
         .sim-sidebar { 
             width: 400px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-            flex-shrink: 0; transition: width 0.3s ease, opacity 0.3s ease; overflow: hidden; 
+            flex-shrink: 0; transition: width 0.3s ease, margin 0.3s ease, opacity 0.3s ease; overflow: hidden; 
         }
         .sim-sidebar.collapsed { width: 0px; opacity: 0; }
         .sim-inner { width: 360px; padding: 20px; display: flex; flex-direction: column; align-items: center; }
@@ -103,12 +103,12 @@
             
             <div id="blocklyDiv"></div>
             
-            <details class="code-container">
+            <details class="code-container" id="pythonDetails">
                 <summary id="pyPreviewLabel">Generated CircuitPython (code.py) ▾</summary>
                 <div id="codePreview"># Code will appear here...</div>
             </details>
 
-            <details class="code-container" open>
+            <details class="code-container" open id="consoleDetails">
                 <summary id="consoleLabel">Output Console ▾</summary>
                 <div id="simConsole"></div>
                 <button onclick="document.getElementById('simConsole').innerHTML=''" style="margin-top:10px; background:#6c757d; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; font-weight:bold;" id="clearConsoleLabel">Clear Console</button>
@@ -138,7 +138,7 @@
     </xml>
 
     <script>
-        // --- 1. LOCALIZATION DATA ---
+        // --- 1. TRANSLATIONS ---
         const translations = {
             en: {
                 hideSim: "◀ Hide Simulator", showSim: "▶ Show Simulator",
@@ -153,7 +153,7 @@
                 blockIs: "Event is %1", blockPressed: "pressed", blockReleased: "released",
                 blockForever: "Forever %1 %2", blockWait: "Wait %1 seconds",
                 simStart: "--- Simulator Started ---", simStop: "--- Simulator Stopped ---",
-                hwConnect: "--- Hardware Connected ---", hwFlash: "--- Flashing Code to Hardware ---"
+                hwConnect: "--- Hardware Connected ---", hwFlash: "--- Flashing Code ---"
             },
             es: {
                 hideSim: "◀ Esconder Simulador", showSim: "▶ Mostrar Simulador",
@@ -175,66 +175,46 @@
         let currentLang = 'en';
 
         // --- 2. BLOCK DEFINITIONS ---
-        function defineBlocks() {
+        // Define them once as dynamic placeholders
+        Blockly.Blocks['ib_pixel'] = { init: function() { this.appendDummyInput().appendField("..."); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); } };
+        Blockly.Blocks['ib_event_handler'] = { init: function() { this.appendDummyInput().appendField("..."); this.appendStatementInput("DO"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(65); } };
+        Blockly.Blocks['ib_event_state'] = { init: function() { this.appendDummyInput().appendField("..."); this.setOutput(true, "Boolean"); this.setColour(65); } };
+        Blockly.Blocks['controls_forever'] = { init: function() { this.appendDummyInput().appendField("..."); this.appendStatementInput("DO"); this.setPreviousStatement(true); this.setColour(120); } };
+        Blockly.Blocks['time_sleep'] = { init: function() { this.appendDummyInput().appendField("..."); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(160); } };
+
+        function updateBlockLabels() {
             const t = translations[currentLang];
-            
-            Blockly.Blocks['ib_pixel'] = {
-                init: function() {
-                    this.jsonInit({
-                        "message0": t.blockPixel,
-                        "args0": [{"type": "field_dropdown", "name": "COLOUR", "options": [["🔴 Red", "255, 0, 0"], ["🟢 Green", "0, 255, 0"], ["🔵 Blue", "0, 0, 255"], ["⚫ Off", "0, 0, 0"]]}],
-                        "previousStatement": null, "nextStatement": null, "colour": 230
-                    });
-                }
-            };
-            Blockly.Blocks['ib_event_handler'] = {
-                init: function() {
-                    this.jsonInit({
-                        "message0": t.blockCheck,
-                        "args0": [{"type": "input_dummy"}, {"type": "input_statement", "name": "DO"}],
-                        "previousStatement": null, "nextStatement": null, "colour": 65
-                    });
-                }
-            };
-            Blockly.Blocks['ib_event_state'] = {
-                init: function() {
-                    this.jsonInit({
-                        "message0": t.blockIs,
-                        "args0": [{"type": "field_dropdown", "name": "STATE", "options": [[t.blockPressed, "pressed"], [t.blockReleased, "released"]]}],
-                        "output": "Boolean", "colour": 65
-                    });
-                }
-            };
-            Blockly.Blocks['controls_forever'] = {
-                init: function() {
-                    this.jsonInit({
-                        "message0": t.blockForever,
-                        "args0": [{"type": "input_dummy"}, {"type": "input_statement", "name": "DO"}],
-                        "previousStatement": null, "colour": 120
-                    });
-                }
-            };
-            Blockly.Blocks['time_sleep'] = {
-                init: function() {
-                    this.jsonInit({
-                        "message0": t.blockWait,
-                        "args0": [{"type": "field_number", "name": "SECONDS", "value": 1}],
-                        "previousStatement": null, "nextStatement": null, "colour": 160
-                    });
-                }
-            };
+            // Re-initialize the internal JSON to refresh the text without destroying the block instance
+            Blockly.Blocks['ib_pixel'].jsonInit({
+                "message0": t.blockPixel,
+                "args0": [{"type": "field_dropdown", "name": "COLOUR", "options": [["🔴 Red", "255, 0, 0"], ["🟢 Green", "0, 255, 0"], ["🔵 Blue", "0, 0, 255"], ["⚫ Off", "0, 0, 0"]]}],
+            });
+            Blockly.Blocks['ib_event_handler'].jsonInit({
+                "message0": t.blockCheck,
+                "args0": [{"type": "input_dummy"}, {"type": "input_statement", "name": "DO"}],
+            });
+            Blockly.Blocks['ib_event_state'].jsonInit({
+                "message0": t.blockIs,
+                "args0": [{"type": "field_dropdown", "name": "STATE", "options": [[t.blockPressed, "pressed"], [t.blockReleased, "released"]]}],
+            });
+            Blockly.Blocks['controls_forever'].jsonInit({
+                "message0": t.blockForever,
+                "args0": [{"type": "input_dummy"}, {"type": "input_statement", "name": "DO"}],
+            });
+            Blockly.Blocks['time_sleep'].jsonInit({
+                "message0": t.blockWait,
+                "args0": [{"type": "field_number", "name": "SECONDS", "value": 1}],
+            });
         }
 
         // --- 3. GENERATORS ---
         python.pythonGenerator.forBlock['ib_pixel'] = function(block) { return `ib.pixel = (${block.getFieldValue('COLOUR')})\n`; };
         python.pythonGenerator.forBlock['time_sleep'] = function(block) { return `sleep(${block.getFieldValue('SECONDS') || 1})\n`; };
         python.pythonGenerator.forBlock['controls_forever'] = function(block) {
-            const branch = python.pythonGenerator.statementToCode(block, 'DO') || '  pass\n';
-            return `while True:\n  sleep(0.01)\n${branch}`;
+            return `while True:\n  sleep(0.01)\n${python.pythonGenerator.statementToCode(block, 'DO') || '  pass\n'}`;
         };
         python.pythonGenerator.forBlock['ib_event_handler'] = function(block) {
-            const branch = python.pythonGenerator.statementToCode(block, 'DO') || '  pass\n';
-            return `event = keys.events.get()\nif event:\n${branch}`;
+            return `event = keys.events.get()\nif event:\n${python.pythonGenerator.statementToCode(block, 'DO') || '  pass\n'}`;
         };
         python.pythonGenerator.forBlock['ib_event_state'] = function(block) {
             return [`event.${block.getFieldValue('STATE')}`, python.Order.ATOMIC];
@@ -242,23 +222,60 @@
 
         javascript.javascriptGenerator.forBlock['ib_pixel'] = function(block) { return `setPixelColor('rgb(${block.getFieldValue('COLOUR')})');\n`; };
         javascript.javascriptGenerator.forBlock['time_sleep'] = function(block) { return `await simSleep(${(block.getFieldValue('SECONDS') || 1) * 1000});\n`; };
-        javascript.javascriptGenerator.forBlock['controls_forever'] = function(block) { return `while (simIsRunning) {\n${javascript.javascriptGenerator.statementToCode(block, 'DO')}\n  await simSleep(20);\n}\n`; };
-        javascript.javascriptGenerator.forBlock['ib_event_handler'] = function(block) { return `let _sim_event = simEventQueue.shift();\nif (_sim_event) {\n${javascript.javascriptGenerator.statementToCode(block, 'DO')}}\n`; };
-        javascript.javascriptGenerator.forBlock['ib_event_state'] = function(block) { return [`(_sim_event === '${block.getFieldValue('STATE')}')`, javascript.Order.ATOMIC]; };
-        javascript.javascriptGenerator.forBlock['text_print'] = function(block) { return `printToConsole(${javascript.javascriptGenerator.valueToCode(block, 'TEXT', javascript.javascriptGenerator.ORDER_NONE) || "''"}, false, 'normal');\n`; };
+        javascript.javascriptGenerator.forBlock['controls_forever'] = function(block) {
+            return `while (simIsRunning) {\n${javascript.javascriptGenerator.statementToCode(block, 'DO')}\n  await simSleep(20);\n}\n`;
+        };
+        javascript.javascriptGenerator.forBlock['ib_event_handler'] = function(block) {
+            return `let _sim_event = simEventQueue.shift();\nif (_sim_event) {\n${javascript.javascriptGenerator.statementToCode(block, 'DO')}}\n`;
+        };
+        javascript.javascriptGenerator.forBlock['ib_event_state'] = function(block) {
+            return [`(_sim_event === '${block.getFieldValue('STATE')}')`, javascript.Order.ATOMIC];
+        };
+        javascript.javascriptGenerator.forBlock['text_print'] = function(block) {
+            return `printToConsole(${javascript.javascriptGenerator.valueToCode(block, 'TEXT', javascript.javascriptGenerator.ORDER_NONE) || "''"}, false, 'normal');\n`;
+        };
 
-        // --- 4. INITIALIZATION ---
+        // --- 4. APP LOGIC ---
         let workspace;
-        
-        function initApp() {
-            defineBlocks();
-            workspace = Blockly.inject('blocklyDiv', { 
-                toolbox: document.getElementById('toolbox'), 
-                grid: {spacing: 20, length: 3, colour: '#ccc', snap: true}, 
-                trashcan: true 
-            });
+        let isConnected = false;
+        let isSidebarHidden = false;
 
-            // Set default blocks
+        function updateUI() {
+            const t = translations[currentLang];
+            document.getElementById('toggleSidebarBtn').innerText = isSidebarHidden ? t.showSim : t.hideSim;
+            document.getElementById('connectBtn').innerText = isConnected ? t.disconnect : t.connect;
+            document.getElementById('connectBtn').style.background = isConnected ? "#6c757d" : "#007bff";
+            document.getElementById('runBtn').innerText = t.run;
+            document.getElementById('runBtn').disabled = !isConnected;
+            document.getElementById('stopBtn').innerText = t.stop;
+            document.getElementById('stopBtn').disabled = !isConnected;
+            document.getElementById('pyPreviewLabel').innerText = t.pyPreview;
+            document.getElementById('consoleLabel').innerText = t.console;
+            document.getElementById('clearConsoleLabel').innerText = t.clear;
+            document.getElementById('playSimLabel').innerText = t.playSim;
+            document.getElementById('statusLabel').innerText = isConnected ? t.statusOnline : t.statusDisc;
+            
+            document.getElementById('catIdeaBoard').setAttribute('name', t.catIB);
+            document.getElementById('catEvents').setAttribute('name', t.catEv);
+            document.getElementById('catLogic').setAttribute('name', t.catLo);
+            document.getElementById('catControl').setAttribute('name', t.catCo);
+            document.getElementById('catText').setAttribute('name', t.catTe);
+            
+            updateBlockLabels();
+            if (workspace) {
+                workspace.updateToolbox(document.getElementById('toolbox'));
+                workspace.getAllBlocks(false).forEach(b => b.render());
+            }
+        }
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            updateUI();
+        }
+
+        window.onload = () => {
+            workspace = Blockly.inject('blocklyDiv', { toolbox: document.getElementById('toolbox'), grid: {spacing: 20, length: 3, colour: '#ccc', snap: true}, trashcan: true });
+            
             const defaultXml = `<xml xmlns="https://developers.google.com/blockly/xml">
                 <block type="text_print" x="20" y="20"><value name="TEXT"><shadow type="text"><field name="TEXT">System Ready!</field></shadow></value>
                 <next><block type="controls_forever"><statement name="DO"><block type="ib_event_handler"><statement name="DO">
@@ -275,42 +292,10 @@
                 const header = `import board\nfrom ideaboard import IdeaBoard\nfrom time import sleep\nimport keypad\n\nib = IdeaBoard()\nkeys = keypad.Keys((board.IO0,), value_when_pressed=False, pull=True)\n\n`;
                 document.getElementById('codePreview').innerText = header + code;
             });
-
-            updateUI();
-        }
-
-        function changeLanguage(lang) {
-            currentLang = lang;
-            // Save blocks, clear workspace, redefine, reload
-            const xml = Blockly.Xml.workspaceToDom(workspace);
-            workspace.dispose();
-            document.getElementById('blocklyDiv').innerHTML = '';
-            initApp();
-            Blockly.Xml.domToWorkspace(xml, workspace);
-        }
-
-        function updateUI() {
-            const t = translations[currentLang];
-            document.getElementById('toggleSidebarBtn').innerText = isSidebarHidden ? t.showSim : t.hideSim;
-            document.getElementById('connectBtn').innerText = isConnected ? t.disconnect : t.connect;
-            document.getElementById('runBtn').innerText = t.run;
-            document.getElementById('stopBtn').innerText = t.stop;
-            document.getElementById('pyPreviewLabel').innerText = t.pyPreview;
-            document.getElementById('consoleLabel').innerText = t.console;
-            document.getElementById('clearConsoleLabel').innerText = t.clear;
-            document.getElementById('playSimLabel').innerText = t.playSim;
-            document.getElementById('statusLabel').innerText = isConnected ? t.statusOnline : t.statusDisc;
             
-            document.getElementById('catIdeaBoard').setAttribute('name', t.catIB);
-            document.getElementById('catEvents').setAttribute('name', t.catEv);
-            document.getElementById('catLogic').setAttribute('name', t.catLo);
-            document.getElementById('catControl').setAttribute('name', t.catCo);
-            document.getElementById('catText').setAttribute('name', t.catTe);
-            workspace.updateToolbox(document.getElementById('toolbox'));
-        }
+            updateUI();
+        };
 
-        // --- 5. LOGIC & SERIAL ---
-        let isSidebarHidden = false;
         function toggleSidebar() {
             const sidebar = document.getElementById('simSidebar');
             isSidebarHidden = !isSidebarHidden;
@@ -319,9 +304,7 @@
             setTimeout(() => Blockly.svgResize(workspace), 310); 
         }
 
-        window.addEventListener('resize', () => { setTimeout(() => Blockly.svgResize(workspace), 50); });
-        document.querySelectorAll('details').forEach(detail => { detail.addEventListener('toggle', () => { setTimeout(() => Blockly.svgResize(workspace), 50); }); });
-
+        // --- 5. SIMULATOR ---
         let simIsRunning = false, simEventQueue = []; 
         function simSleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
         function setPixelColor(rgbString) {
@@ -329,7 +312,6 @@
             if (rgbString === 'rgb(0, 0, 0)') { pixel.style.backgroundColor = 'rgba(0,0,0,0.5)'; pixel.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.5)'; }
             else { pixel.style.backgroundColor = rgbString; pixel.style.boxShadow = `0 0 15px 5px ${rgbString}, inset 0 0 5px white`; }
         }
-
         function printToConsole(msg, isHardware = false, type = 'normal') {
             const cons = document.getElementById('simConsole');
             let cleanMsg = isHardware ? msg.replace(/\r/g, '') : msg + '\n';
@@ -351,7 +333,8 @@
         }
         function stopSimulator() { simIsRunning = false; setPixelColor('rgb(0, 0, 0)'); printToConsole(translations[currentLang].simStop, false, 'sys'); }
 
-        let boardPort = null, boardWriter = null, serialReader = null, isConnected = false, isFlashing = false, keepReading = false;
+        // --- 6. SERIAL ---
+        let boardPort = null, boardWriter = null, serialReader = null, isFlashing = false, keepReading = false;
         async function readLoop() {
             const dec = new TextDecoder();
             while (boardPort && keepReading) {
@@ -408,9 +391,6 @@
                 document.getElementById('statusLabel').innerText = t.statusRun;
             } catch (err) { isFlashing = false; }
         }
-
-        // START!
-        initApp();
     </script>
 </body>
 </html>
