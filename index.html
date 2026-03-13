@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaScratch v1.35</title>
+    <title>IdeaScratch v1.36</title>
 
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -13,7 +13,7 @@
 </head>
 <body>
 
-    <h2>IdeaScratch v1.35</h2>
+    <h2>IdeaScratch v1.36</h2>
 
     <div id="app-layout">
 
@@ -21,7 +21,7 @@
             <div class="sim-inner">
                 <div class="sim-controls">
                     <button class="sim-btn" onclick="runSimulator()">▶ Play Sim</button>
-                    <button class="sim-btn" id="stopSimBtn" onclick="stopSimulator()">⬛ Stop</button>
+                    <button class="sim-btn" id="stopSimBtn" onclick="stopSimulator()">■ Stop</button>
                 </div>
                 <div class="board-container">
                     <img src="ideaboard.svg" alt="IdeaBoard" class="board-img">
@@ -49,7 +49,6 @@
                     <div class="dropdown-menu" id="projectsMenu"></div>
                 </div>
 
-                <strong>Hardware:</strong>
                 <button class="hw-btn" onclick="toggleConnection()" id="connectBtn">Connect</button>
                 <button class="hw-btn" onclick="runCode()" id="runBtn" disabled>Run</button>
                 <button class="hw-btn" onclick="stopCode()" id="stopBtn" disabled>Stop</button>
