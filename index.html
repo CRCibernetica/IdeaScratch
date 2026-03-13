@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaBoard Blockly IDE v1.9</title>
+    <title>IdeaBoard Blockly IDE v1.10</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -26,7 +26,7 @@
 <body>
 
     <div id="app-container">
-        <h2>IdeaBoard Scratch Editor v1.9</h2>
+        <h2>IdeaBoard Scratch Editor v1.10</h2>
         
         <div class="controls">
             <button onclick="connectSerial()" id="connectBtn">Connect</button>
@@ -122,7 +122,7 @@
             trashcan: true
         });
 
-        // --- NEW: INJECT DEFAULT BLOCKS ---
+        // Pre-load the Blink Code
         const defaultBlocksXml = `
         <xml xmlns="https://developers.google.com/blockly/xml">
           <block type="controls_forever" x="50" y="50">
@@ -159,30 +159,12 @@
         let boardPort = null;
         let boardWriter = null;
 
-        async function readLoop() {
-            while (boardPort.readable) {
-                const reader = boardPort.readable.getReader();
-                try {
-                    while (true) {
-                        const { value, done } = await reader.read();
-                        if (done) break;
-                    }
-                } catch (error) {
-                    console.error("Reader error:", error);
-                    break;
-                } finally {
-                    reader.releaseLock();
-                }
-            }
-        }
-
+        // Reverted: Removed the background readLoop() completely
         async function connectSerial() {
             try {
                 boardPort = await navigator.serial.requestPort();
                 await boardPort.open({ baudRate: 115200 });
                 boardWriter = boardPort.writable.getWriter();
-                
-                readLoop();
                 
                 document.getElementById('runBtn').disabled = false;
                 document.getElementById('connectBtn').innerText = "Connected";
@@ -190,10 +172,11 @@
                 document.getElementById('statusLabel').innerText = "Status: Online";
             } catch (err) {
                 console.error("Connection failed", err);
-                alert("Could not connect. Ensure no other apps are using the port.");
+                alert("Could not connect. Ensure no other apps (like Thonny) are using the port.");
             }
         }
 
+        // Reverted: Back to the exact v1.5 sequence (no chunking, double Ctrl+C)
         async function runCode() {
             if (!boardWriter) return;
 
@@ -203,36 +186,24 @@
             try {
                 document.getElementById('statusLabel').innerText = "Status: Flashing...";
                 
-                // 1. Interrupt running code
-                await boardWriter.write(encoder.encode('\x03')); 
-                await new Promise(r => setTimeout(r, 400)); 
+                await boardWriter.write(encoder.encode('\x03\x03')); 
+                await new Promise(r => setTimeout(r, 300));
 
-                // 2. Enter Raw REPL (Ctrl+A)
                 await boardWriter.write(encoder.encode('\x01')); 
-                await new Promise(r => setTimeout(r, 400)); 
+                await new Promise(r => setTimeout(r, 300));
                 
-                // --- NEW: CHUNKED FILE TRANSFER ---
-                const transferScript = `f=open('code.py','w')\nf.write('''${code}''')\nf.close()\n`;
-                const payload = encoder.encode(transferScript);
+                const transferScript = `f=open('code.py','w');f.write('''${code}''');f.close()\n`;
+                await boardWriter.write(encoder.encode(transferScript));
                 
-                // Send the script 64 bytes at a time with a 20ms pause
-                for (let i = 0; i < payload.length; i += 64) {
-                    await boardWriter.write(payload.slice(i, i + 64));
-                    await new Promise(r => setTimeout(r, 20)); 
-                }
-                
-                // 4. Execute Write (Ctrl+D)
                 await boardWriter.write(encoder.encode('\x04')); 
-                await new Promise(r => setTimeout(r, 600)); // Wait for flash to save
+                await new Promise(r => setTimeout(r, 600)); 
                 
-                // 5. Exit Raw REPL (Ctrl+B)
                 await boardWriter.write(encoder.encode('\x02')); 
                 await new Promise(r => setTimeout(r, 200));
 
-                // 6. Soft Reboot (Ctrl+D)
                 await boardWriter.write(encoder.encode('\x04')); 
                 
-                document.getElementById('statusLabel').innerText = "Status: Success! Code is running.";
+                document.getElementById('statusLabel').innerText = "Status: Success! Code should be running.";
             } catch (err) {
                 console.error("Flash failed", err);
                 document.getElementById('statusLabel').innerText = "Status: Error flashing.";
