@@ -1,0 +1,68 @@
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f4f4f9; height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; }
+h2 { margin-top: 0; color: #333; }
+
+#app-layout { display: flex; gap: 20px; flex: 1; min-height: 0; align-items: flex-start; }
+
+.sim-sidebar {
+    width: 400px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    flex-shrink: 0; transition: width 0.3s ease, margin 0.3s ease, opacity 0.3s ease; overflow: hidden;
+}
+.sim-sidebar.collapsed { width: 0px; opacity: 0; }
+.sim-inner { width: 360px; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+
+.sim-controls { width: 100%; display: flex; gap: 10px; margin-bottom: 15px; }
+.sim-btn { flex: 1; padding: 10px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; color: white; background: #6f42c1; transition: 0.2s;}
+.sim-btn:hover { background: #5a32a3; }
+#stopSimBtn { background: #dc3545; }
+#stopSimBtn:hover { background: #c82333; }
+
+.board-container { position: relative; display: inline-block; margin: 10px auto 0; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2)); }
+.board-img { width: 300px; height: auto; display: block; user-select: none; -webkit-user-drag: none;}
+
+#sim-pixel {
+    position: absolute; top: 52.5%; left: 49.7%; width: 22px; height: 22px; transform: translate(-50%, -50%);
+    border-radius: 50%; background-color: rgba(0, 0, 0, 0.5); transition: all 0.1s ease-in-out; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); z-index: 10;
+}
+
+/* Hitbox is now invisible but perfectly aligned! */
+#sim-boot-hitbox {
+    position: absolute;
+    top: 16.7%;
+    left: 93.1%;
+    width: 20px;
+    height: 32px;
+    transform: translate(-50%, -50%);
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 20;
+    background-color: rgba(255, 255, 255, 0);
+    border: none;
+    transition: background-color 0.1s;
+}
+#sim-boot-hitbox:hover { background-color: rgba(255, 255, 255, 0.3); }
+#sim-boot-hitbox:active { background-color: rgba(0, 0, 0, 0.5); }
+
+.ide-panel { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 0; height: 100%; }
+.hardware-controls { display: flex; gap: 10px; align-items: center; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #28a745;}
+
+button.hw-btn { padding: 10px 20px; border-radius: 5px; border: none; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+button.hw-btn:disabled { background: #ccc !important; cursor: not-allowed; }
+
+#toggleSidebarBtn { background: #6c757d; margin-right: 15px; }
+#toggleSidebarBtn:hover { background: #5a6268; }
+#connectBtn { background: #007bff; }
+#connectBtn:hover { background: #0056b3; }
+#runBtn { background: #28a745; }
+#runBtn:hover { background: #218838; }
+#stopBtn { background: #dc3545; }
+#stopBtn:hover { background: #c82333; }
+.status { font-size: 0.9em; color: #555; font-weight: 500; margin-left: auto;}
+
+#blocklyDiv { flex: 1; border: 1px solid #ddd; border-radius: 8px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
+.code-container { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.code-container summary { font-size: 1.1em; font-weight: bold; cursor: pointer; color: #333; outline: none; }
+#codePreview { background: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px; white-space: pre; font-family: 'Consolas', monospace; overflow-x: auto; margin-top: 15px; font-size: 0.9em; }
+
+#simConsole { background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 8px; height: 160px; overflow-y: auto; font-family: 'Consolas', monospace; margin-top: 15px; white-space: pre-wrap; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); line-height: 1.4; }
+.error-text { color: #ff4d4d; }
+.sys-text { color: #a1a1a1; font-style: italic; }
