@@ -1,6 +1,8 @@
 // --- WORKSPACE INITIALIZATION ---
 const workspace = Blockly.inject('blocklyDiv', {
     toolbox: document.getElementById('toolbox'),
+    renderer: 'zelos',
+    theme: Blockly.Themes.Zelos,
     grid: {spacing: 20, length: 3, colour: '#ccc', snap: true},
     trashcan: true
 });
