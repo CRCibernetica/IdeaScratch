@@ -22,6 +22,12 @@ python.pythonGenerator.forBlock['ib_event_state'] = function(block) {
     return [`event.${state}`, python.Order.ATOMIC];
 };
 
+python.pythonGenerator.forBlock['ib_motors'] = function(block) {
+    const m1 = block.getFieldValue('MOTOR1');
+    const m2 = block.getFieldValue('MOTOR2');
+    return `ib.motor_1.throttle = ${m1}\nib.motor_2.throttle = ${m2}\n`;
+};
+
 // --- JAVASCRIPT SIMULATOR GENERATORS ---
 javascript.javascriptGenerator.forBlock['ib_pixel'] = function(block) {
     return `setPixelColor('rgb(${block.getFieldValue('COLOUR')})');\n`;
@@ -32,6 +38,11 @@ javascript.javascriptGenerator.forBlock['time_sleep'] = function(block) {
 javascript.javascriptGenerator.forBlock['controls_forever'] = function(block) {
     const branch = javascript.javascriptGenerator.statementToCode(block, 'DO');
     return `while (simIsRunning) {\n${branch}\n  await simSleep(20);\n}\n`;
+};
+javascript.javascriptGenerator.forBlock['ib_motors'] = function(block) {
+    const m1 = block.getFieldValue('MOTOR1');
+    const m2 = block.getFieldValue('MOTOR2');
+    return `printToConsole('Motor 1: ${m1}  Motor 2: ${m2}', false, 'sys');\n`;
 };
 javascript.javascriptGenerator.forBlock['ib_event_handler'] = function(block) {
     const branch = javascript.javascriptGenerator.statementToCode(block, 'DO');

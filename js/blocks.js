@@ -45,6 +45,18 @@ Blockly.common.defineBlocksWithJsonArray([
         "colour": 65
     },
     {
+        "type": "ib_motors",
+        "message0": "Set Motors  Motor 1 %1  Motor 2 %2",
+        "args0": [
+            {"type": "field_number", "name": "MOTOR1", "value": 0, "min": -1, "max": 1, "precision": 0.01},
+            {"type": "field_number", "name": "MOTOR2", "value": 0, "min": -1, "max": 1, "precision": 0.01}
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 230,
+        "tooltip": "Set motor speed: 1.0 = full forward, -1.0 = full reverse, 0 = brake"
+    },
+    {
         "type": "ib_event_state",
         "message0": "Event is %1",
         "args0": [
