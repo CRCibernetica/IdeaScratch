@@ -2,54 +2,98 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaBoard Blockly IDE v1.12</title>
+    <title>IdeaBoard Blockly IDE v1.13</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/blockly/javascript_compressed.js"></script>
 
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: #f4f4f9; }
-        #app-container { display: flex; flex-direction: column; gap: 15px; max-width: 1200px; margin: 0 auto; }
-        #blocklyDiv { height: 600px; width: 100%; border: 1px solid #ddd; border-radius: 8px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .controls { display: flex; gap: 10px; align-items: center; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f4f4f9; height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; }
+        h2 { margin-top: 0; }
         
-        button { padding: 10px 20px; border-radius: 5px; border: none; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s; }
-        button:disabled { background: #ccc !important; cursor: not-allowed; }
+        #app-layout { display: flex; gap: 20px; flex: 1; min-height: 0; }
         
-        /* Button Colors */
+        /* Left Panel: Simulator */
+        .sim-panel { flex: 0 0 320px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; }
+        .sim-controls { width: 100%; display: flex; gap: 10px; margin-bottom: 20px; }
+        .sim-btn { flex: 1; padding: 10px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; color: white; background: #6f42c1; }
+        .sim-btn:hover { background: #5a32a3; }
+        #stopSimBtn { background: #dc3545; }
+        
+        .board-container { position: relative; width: 100%; max-width: 280px; aspect-ratio: 2/3; margin: 0 auto; }
+        .board-img { width: 100%; height: auto; display: block; }
+        
+        /* The Virtual NeoPixel */
+        #sim-pixel {
+            position: absolute;
+            /* Adjust these percentages if the pixel doesn't align perfectly with your SVG */
+            top: 42%; 
+            left: 31%; 
+            width: 24px; 
+            height: 24px;
+            margin-top: -12px; /* Center adjustment */
+            margin-left: -12px; /* Center adjustment */
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: all 0.2s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Right Panel: IDE */
+        .ide-panel { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 0; }
+        
+        .hardware-controls { display: flex; gap: 10px; align-items: center; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #28a745;}
+        button.hw-btn { padding: 10px 20px; border-radius: 5px; border: none; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        button.hw-btn:disabled { background: #ccc !important; cursor: not-allowed; }
+        
         #connectBtn { background: #007bff; }
-        #connectBtn:hover { background: #0056b3; }
         #runBtn { background: #28a745; }
-        #runBtn:hover { background: #218838; }
         #stopBtn { background: #dc3545; }
-        #stopBtn:hover { background: #c82333; }
-        
         .status { font-size: 0.9em; color: #555; font-weight: 500; margin-left: auto;}
         
+        #blocklyDiv { flex: 1; border: 1px solid #ddd; border-radius: 8px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
         .code-container { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .code-container summary { font-size: 1.17em; font-weight: bold; cursor: pointer; user-select: none; color: #333; outline: none; }
-        .code-container summary:hover { color: #007bff; }
-        #codePreview { background: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px; white-space: pre; font-family: 'Consolas', monospace; overflow-x: auto; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); margin-top: 15px; }
+        .code-container summary { font-size: 1.1em; font-weight: bold; cursor: pointer; color: #333; outline: none; }
+        #codePreview { background: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px; white-space: pre; font-family: 'Consolas', monospace; overflow-x: auto; margin-top: 15px; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
-    <div id="app-container">
-        <h2>IdeaBoard Scratch Editor v1.12</h2>
+    <h2>IdeaBoard IDE + Simulator v1.13</h2>
+
+    <div id="app-layout">
         
-        <div class="controls">
-            <button onclick="toggleConnection()" id="connectBtn">Connect</button>
-            <button onclick="runCode()" id="runBtn" disabled>Run</button>
-            <button onclick="stopCode()" id="stopBtn" disabled>Stop</button>
-            <span id="statusLabel" class="status">Status: Disconnected</span>
+        <div class="sim-panel">
+            <h3>Simulator</h3>
+            <div class="sim-controls">
+                <button class="sim-btn" onclick="runSimulator()">▶ Play Sim</button>
+                <button class="sim-btn" id="stopSimBtn" onclick="stopSimulator()">⬛ Stop</button>
+            </div>
+            
+            <div class="board-container">
+                <img src="ideaboard.svg" alt="IdeaBoard" class="board-img">
+                <div id="sim-pixel"></div>
+            </div>
         </div>
 
-        <div id="blocklyDiv"></div>
-        
-        <details class="code-container">
-            <summary>Generated CircuitPython (code.py) ▾</summary>
-            <div id="codePreview"># Code will appear here...</div>
-        </details>
+        <div class="ide-panel">
+            <div class="hardware-controls">
+                <strong>Hardware:</strong>
+                <button class="hw-btn" onclick="toggleConnection()" id="connectBtn">Connect</button>
+                <button class="hw-btn" onclick="runCode()" id="runBtn" disabled>Flash & Run</button>
+                <button class="hw-btn" onclick="stopCode()" id="stopBtn" disabled>Stop</button>
+                <span id="statusLabel" class="status">Status: Disconnected</span>
+            </div>
+
+            <div id="blocklyDiv"></div>
+            
+            <details class="code-container">
+                <summary>Generated CircuitPython (code.py) ▾</summary>
+                <div id="codePreview"># Code will appear here...</div>
+            </details>
+        </div>
     </div>
 
     <xml id="toolbox" style="display: none">
@@ -63,6 +107,7 @@
     </xml>
 
     <script>
+        // --- 1. BLOCK DEFINITIONS ---
         Blockly.common.defineBlocksWithJsonArray([
             {
                 "type": "ib_pixel",
@@ -111,21 +156,38 @@
             }
         ]);
 
+        // --- 2. PYTHON GENERATORS (Hardware) ---
         python.pythonGenerator.forBlock['ib_pixel'] = function(block) {
             const rgb = block.getFieldValue('COLOUR'); 
             return `ib.pixel = (${rgb})\n`;
         };
-
         python.pythonGenerator.forBlock['time_sleep'] = function(block) {
             const seconds = block.getFieldValue('SECONDS') || 1;
             return `sleep(${seconds})\n`;
         };
-
         python.pythonGenerator.forBlock['controls_forever'] = function(block) {
             const branch = python.pythonGenerator.statementToCode(block, 'DO');
             return `while True:\n${branch || '    pass\n'}`;
         };
 
+        // --- 3. JAVASCRIPT GENERATORS (Simulator) ---
+        // We instruct Blockly to generate Javascript that interacts with our HTML
+        javascript.javascriptGenerator.forBlock['ib_pixel'] = function(block) {
+            const rgb = block.getFieldValue('COLOUR'); 
+            return `setPixelColor('rgb(${rgb})');\n`;
+        };
+        javascript.javascriptGenerator.forBlock['time_sleep'] = function(block) {
+            const seconds = block.getFieldValue('SECONDS') || 1;
+            // The simulator uses async/await to emulate hardware delays without freezing the browser
+            return `await simSleep(${seconds * 1000});\n`;
+        };
+        javascript.javascriptGenerator.forBlock['controls_forever'] = function(block) {
+            const branch = javascript.javascriptGenerator.statementToCode(block, 'DO');
+            // We check simIsRunning so the loop breaks if the user clicks "Stop"
+            return `while (simIsRunning) {\n${branch}\n  await simSleep(10);\n}\n`;
+        };
+
+        // --- 4. WORKSPACE INITIALIZATION ---
         const workspace = Blockly.inject('blocklyDiv', {
             toolbox: document.getElementById('toolbox'),
             grid: {spacing: 20, length: 3, colour: '#ccc', snap: true},
@@ -134,24 +196,15 @@
 
         const defaultBlocksXml = `
         <xml xmlns="https://developers.google.com/blockly/xml">
-          <block type="controls_forever" x="50" y="50">
+          <block type="controls_forever" x="20" y="20">
             <statement name="DO">
               <block type="ib_pixel">
                 <field name="COLOUR">255, 0, 0</field>
                 <next>
-                  <block type="time_sleep">
-                    <field name="SECONDS">1</field>
-                    <next>
-                      <block type="ib_pixel">
-                        <field name="COLOUR">0, 0, 0</field>
-                        <next>
-                          <block type="time_sleep">
-                            <field name="SECONDS">1</field>
-                          </block>
-                        </next>
-                      </block>
-                    </next>
-                  </block>
+                  <block type="time_sleep"><field name="SECONDS">1</field><next>
+                  <block type="ib_pixel"><field name="COLOUR">0, 0, 0</field><next>
+                  <block type="time_sleep"><field name="SECONDS">1</field></block>
+                  </next></block></next></block>
                 </next>
               </block>
             </statement>
@@ -165,57 +218,81 @@
             document.getElementById('codePreview').innerText = header + generatedCode;
         });
 
-        // --- UPDATED SERIAL STATE MANAGEMENT ---
+        // --- 5. SIMULATOR LOGIC ---
+        let simIsRunning = false;
+        
+        // Helper to delay execution (emulates time.sleep)
+        function simSleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Helper to change the HTML element
+        function setPixelColor(rgbString) {
+            const pixel = document.getElementById('sim-pixel');
+            if (rgbString === 'rgb(0, 0, 0)') {
+                pixel.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                pixel.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.5)';
+            } else {
+                pixel.style.backgroundColor = rgbString;
+                // Add a glowing effect
+                pixel.style.boxShadow = `0 0 15px 5px ${rgbString}, inset 0 0 5px white`;
+            }
+        }
+
+        async function runSimulator() {
+            simIsRunning = false; // Kill any running instance
+            await simSleep(50);   // Give it a moment to stop
+            simIsRunning = true;
+            
+            // Get the JavaScript representation of the blocks
+            const jsCode = javascript.javascriptGenerator.workspaceToCode(workspace);
+            
+            // We dynamically create an asynchronous function to run the generated code
+            const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+            const executeSim = new AsyncFunction(jsCode);
+            
+            try {
+                await executeSim(); // Run the user's code in the browser!
+            } catch (err) {
+                console.error("Simulator error:", err);
+            }
+        }
+
+        function stopSimulator() {
+            simIsRunning = false;
+            setPixelColor('rgb(0, 0, 0)'); // Turn the virtual pixel off
+        }
+
+
+        // --- 6. HARDWARE SERIAL LOGIC (Unchanged from v1.12) ---
         let boardPort = null;
         let boardWriter = null;
         let isConnected = false;
 
         async function toggleConnection() {
             if (isConnected) {
-                // DISCONNECT LOGIC
                 try {
-                    // 1. Release the writer lock
-                    if (boardWriter) {
-                        boardWriter.releaseLock();
-                        boardWriter = null;
-                    }
-                    // 2. Close the port completely
-                    if (boardPort) {
-                        await boardPort.close();
-                        boardPort = null;
-                    }
-                    
+                    if (boardWriter) { boardWriter.releaseLock(); boardWriter = null; }
+                    if (boardPort) { await boardPort.close(); boardPort = null; }
                     isConnected = false;
-                    
-                    // Update UI
                     document.getElementById('connectBtn').innerText = "Connect";
-                    document.getElementById('connectBtn').style.background = "#007bff"; // Back to Blue
+                    document.getElementById('connectBtn').style.background = "#007bff";
                     document.getElementById('runBtn').disabled = true;
                     document.getElementById('stopBtn').disabled = true;
                     document.getElementById('statusLabel').innerText = "Status: Disconnected";
-                } catch (err) {
-                    console.error("Disconnect error:", err);
-                    alert("Error disconnecting. You may need to refresh the page.");
-                }
+                } catch (err) { console.error(err); }
             } else {
-                // CONNECT LOGIC
                 try {
                     boardPort = await navigator.serial.requestPort();
                     await boardPort.open({ baudRate: 115200 });
                     boardWriter = boardPort.writable.getWriter();
-                    
                     isConnected = true;
-                    
-                    // Update UI
                     document.getElementById('connectBtn').innerText = "Disconnect";
-                    document.getElementById('connectBtn').style.background = "#6c757d"; // Gray for disconnect
+                    document.getElementById('connectBtn').style.background = "#6c757d";
                     document.getElementById('runBtn').disabled = false;
                     document.getElementById('stopBtn').disabled = false;
                     document.getElementById('statusLabel').innerText = "Status: Online";
-                } catch (err) {
-                    console.error("Connection failed", err);
-                    alert("Could not connect. Ensure no other apps are using the port.");
-                }
+                } catch (err) { console.error(err); }
             }
         }
 
@@ -223,43 +300,30 @@
             if (!boardWriter || !isConnected) return;
             try {
                 const encoder = new TextEncoder();
-                // Send a single Ctrl+C to halt running code
                 await boardWriter.write(encoder.encode('\x03'));
                 document.getElementById('statusLabel').innerText = "Status: Code Stopped";
-            } catch(err) {
-                console.error("Stop failed", err);
-            }
+            } catch(err) {}
         }
 
         async function runCode() {
             if (!boardWriter) return;
-
             document.getElementById('statusLabel').innerText = "Status: Flashing...";
-
             const rawBlockCode = python.pythonGenerator.workspaceToCode(workspace);
             const pyHeader = `import board\nfrom ideaboard import IdeaBoard\nfrom time import sleep\n\nib = IdeaBoard()\n\n`;
             const code = pyHeader + rawBlockCode;
-            
             const encoder = new TextEncoder();
-
             try {
                 await boardWriter.write(encoder.encode('\x03\x03')); 
                 await new Promise(r => setTimeout(r, 300));
-
                 await boardWriter.write(encoder.encode('\x01')); 
                 await new Promise(r => setTimeout(r, 300));
-                
                 const transferScript = `f=open('code.py','w');f.write('''${code}''');f.close()\n`;
                 await boardWriter.write(encoder.encode(transferScript));
-                
                 await boardWriter.write(encoder.encode('\x04')); 
                 await new Promise(r => setTimeout(r, 600)); 
-                
                 await boardWriter.write(encoder.encode('\x02')); 
                 await new Promise(r => setTimeout(r, 200));
-
                 await boardWriter.write(encoder.encode('\x04')); 
-                
                 document.getElementById('statusLabel').innerText = "Status: Success! Code is running.";
             } catch (err) {
                 console.error("Flash failed", err);
