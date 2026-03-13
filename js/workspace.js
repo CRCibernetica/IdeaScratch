@@ -5,7 +5,6 @@ const workspace = Blockly.inject('blocklyDiv', {
     trashcan: true
 });
 
-loadExample('buttonLED');
 
 workspace.addChangeListener(() => {
     const generatedCode = python.pythonGenerator.workspaceToCode(workspace);
