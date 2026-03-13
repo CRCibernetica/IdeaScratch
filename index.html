@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaScratch v1.29</title>
+    <title>IdeaScratch v1.30</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -35,12 +35,11 @@
             border-radius: 50%; background-color: rgba(0, 0, 0, 0.5); transition: all 0.1s ease-in-out; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); z-index: 10;
         }
 
-        /* UPDATED: Mathematically Aligned to SVG path29472! */
+        /* Hitbox is now invisible but perfectly aligned! */
         #sim-boot-hitbox {
             position: absolute;
             top: 16.7%; 
             left: 93.1%; 
-            
             width: 20px; 
             height: 32px; 
             transform: translate(-50%, -50%);
@@ -48,8 +47,7 @@
             cursor: pointer;
             z-index: 20;
             background-color: rgba(255, 255, 255, 0); 
-            /* Bright red border to verify alignment easily */
-            border: 2px dashed rgba(255, 0, 0, 0.6); 
+            border: none; 
             transition: background-color 0.1s;
         }
         #sim-boot-hitbox:hover { background-color: rgba(255, 255, 255, 0.3); }
@@ -71,7 +69,7 @@
         #stopBtn:hover { background: #c82333; }
         .status { font-size: 0.9em; color: #555; font-weight: 500; margin-left: auto;}
         
-        #blocklyDiv { flex: 1; border: 1px solid #ddd; border-radius: 8px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        #blocklyDiv { flex: 1; border: 1px solid #ddd; border-radius: 8px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
         .code-container { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .code-container summary { font-size: 1.1em; font-weight: bold; cursor: pointer; color: #333; outline: none; }
         #codePreview { background: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px; white-space: pre; font-family: 'Consolas', monospace; overflow-x: auto; margin-top: 15px; font-size: 0.9em; }
@@ -83,7 +81,7 @@
 </head>
 <body>
 
-    <h2>IdeaScratch v1.29</h2>
+    <h2>IdeaScratch v1.30</h2>
 
     <div id="app-layout">
         
@@ -113,12 +111,12 @@
             
             <div id="blocklyDiv"></div>
             
-            <details class="code-container">
+            <details class="code-container" id="pythonDetails">
                 <summary>Generated CircuitPython (code.py) ▾</summary>
                 <div id="codePreview"># Code will appear here...</div>
             </details>
 
-            <details class="code-container" open>
+            <details class="code-container" open id="consoleDetails">
                 <summary>Output Console ▾</summary>
                 <div id="simConsole"></div>
                 <button onclick="document.getElementById('simConsole').innerHTML=''" style="margin-top:10px; background:#6c757d; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Clear Console</button>
@@ -148,6 +146,7 @@
     </xml>
 
     <script>
+        // --- 1. BLOCK DEFINITIONS ---
         Blockly.common.defineBlocksWithJsonArray([
             {
                 "type": "ib_pixel",
@@ -211,61 +210,55 @@
             }
         ]);
 
+        // --- 2. PYTHON GENERATORS ---
         python.pythonGenerator.forBlock['ib_pixel'] = function(block) {
             return `ib.pixel = (${block.getFieldValue('COLOUR')})\n`;
         };
-        
         python.pythonGenerator.forBlock['time_sleep'] = function(block) {
             return `sleep(${block.getFieldValue('SECONDS') || 1})\n`;
         };
-        
         python.pythonGenerator.forBlock['controls_forever'] = function(block) {
             const indent = python.pythonGenerator.INDENT || '  ';
             let branch = python.pythonGenerator.statementToCode(block, 'DO');
             if (!branch) branch = indent + 'pass\n';
             return `while True:\n${indent}sleep(0.01)\n${branch}`;
         };
-
         python.pythonGenerator.forBlock['ib_event_handler'] = function(block) {
             const indent = python.pythonGenerator.INDENT || '  ';
             let branch = python.pythonGenerator.statementToCode(block, 'DO');
             if (!branch) branch = indent + 'pass\n';
             return `event = keys.events.get()\nif event:\n${branch}`;
         };
-
         python.pythonGenerator.forBlock['ib_event_state'] = function(block) {
             const state = block.getFieldValue('STATE');
             return [`event.${state}`, python.Order.ATOMIC];
         };
 
+        // --- 3. JAVASCRIPT SIMULATOR GENERATORS ---
         javascript.javascriptGenerator.forBlock['ib_pixel'] = function(block) {
             return `setPixelColor('rgb(${block.getFieldValue('COLOUR')})');\n`;
         };
-        
         javascript.javascriptGenerator.forBlock['time_sleep'] = function(block) {
             return `await simSleep(${(block.getFieldValue('SECONDS') || 1) * 1000});\n`;
         };
-        
         javascript.javascriptGenerator.forBlock['controls_forever'] = function(block) {
             const branch = javascript.javascriptGenerator.statementToCode(block, 'DO');
             return `while (simIsRunning) {\n${branch}\n  await simSleep(20);\n}\n`;
         };
-
         javascript.javascriptGenerator.forBlock['ib_event_handler'] = function(block) {
             const branch = javascript.javascriptGenerator.statementToCode(block, 'DO');
             return `let _sim_event = simEventQueue.shift();\nif (_sim_event) {\n${branch}}\n`;
         };
-
         javascript.javascriptGenerator.forBlock['ib_event_state'] = function(block) {
             const state = block.getFieldValue('STATE');
             return [`(_sim_event === '${state}')`, javascript.Order.ATOMIC];
         };
-
         javascript.javascriptGenerator.forBlock['text_print'] = function(block) {
             const msg = javascript.javascriptGenerator.valueToCode(block, 'TEXT', javascript.javascriptGenerator.ORDER_NONE) || "''";
             return `printToConsole(${msg}, false, 'normal');\n`;
         };
 
+        // --- 4. WORKSPACE INITIALIZATION ---
         const workspace = Blockly.inject('blocklyDiv', {
             toolbox: document.getElementById('toolbox'),
             grid: {spacing: 20, length: 3, colour: '#ccc', snap: true},
@@ -325,6 +318,16 @@
             document.getElementById('codePreview').innerText = header + generatedCode;
         });
 
+        // --- NEW: Fix Blockly Resize Bug ---
+        // Forces Blockly to redraw when panels are opened/closed or window resizes
+        const resizeBlockly = () => {
+            setTimeout(() => { Blockly.svgResize(workspace); }, 50);
+        };
+        window.addEventListener('resize', resizeBlockly);
+        document.querySelectorAll('details').forEach(detail => {
+            detail.addEventListener('toggle', resizeBlockly);
+        });
+
         function toggleSidebar() {
             const sidebar = document.getElementById('simSidebar');
             const btn = document.getElementById('toggleSidebarBtn');
@@ -337,6 +340,7 @@
             }
         }
 
+        // --- 5. SIMULATOR & CONSOLE LOGIC ---
         let simIsRunning = false;
         let simEventQueue = []; 
         
@@ -374,7 +378,6 @@
                 const textNode = document.createTextNode(cleanMsg);
                 cons.appendChild(textNode);
             }
-            
             cons.scrollTop = cons.scrollHeight;
         }
         
@@ -415,6 +418,7 @@
             printToConsole("--- Simulator Stopped ---", false, 'sys');
         }
 
+        // --- 6. HARDWARE SERIAL LOGIC ---
         let boardPort = null;
         let boardWriter = null;
         let serialReader = null;
