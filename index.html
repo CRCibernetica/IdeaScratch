@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaScratch v1.30</title>
+    <title>IdeaScratch v1.31</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -10,7 +10,8 @@
 
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f4f4f9; height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; }
-        h2 { margin-top: 0; color: #333; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        h2 { margin: 0; color: #333; }
         
         #app-layout { display: flex; gap: 20px; flex: 1; min-height: 0; align-items: flex-start; }
         
@@ -25,7 +26,6 @@
         .sim-btn { flex: 1; padding: 10px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; color: white; background: #6f42c1; transition: 0.2s;}
         .sim-btn:hover { background: #5a32a3; }
         #stopSimBtn { background: #dc3545; }
-        #stopSimBtn:hover { background: #c82333; }
         
         .board-container { position: relative; display: inline-block; margin: 10px auto 0; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2)); }
         .board-img { width: 300px; height: auto; display: block; user-select: none; -webkit-user-drag: none;}
@@ -35,40 +35,28 @@
             border-radius: 50%; background-color: rgba(0, 0, 0, 0.5); transition: all 0.1s ease-in-out; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); z-index: 10;
         }
 
-        /* Hitbox is now invisible but perfectly aligned! */
         #sim-boot-hitbox {
-            position: absolute;
-            top: 16.7%; 
-            left: 93.1%; 
-            width: 20px; 
-            height: 32px; 
-            transform: translate(-50%, -50%);
-            border-radius: 4px;
-            cursor: pointer;
-            z-index: 20;
-            background-color: rgba(255, 255, 255, 0); 
-            border: none; 
-            transition: background-color 0.1s;
+            position: absolute; top: 16.7%; left: 93.1%; width: 20px; height: 32px; transform: translate(-50%, -50%);
+            border-radius: 4px; cursor: pointer; z-index: 20; background-color: rgba(255, 255, 255, 0); transition: background-color 0.1s;
         }
         #sim-boot-hitbox:hover { background-color: rgba(255, 255, 255, 0.3); }
         #sim-boot-hitbox:active { background-color: rgba(0, 0, 0, 0.5); }
 
         .ide-panel { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 0; height: 100%; }
-        .hardware-controls { display: flex; gap: 10px; align-items: center; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #28a745;}
+        .controls-bar { display: flex; gap: 10px; align-items: center; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #28a745;}
         
-        button.hw-btn { padding: 10px 20px; border-radius: 5px; border: none; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s; }
-        button.hw-btn:disabled { background: #ccc !important; cursor: not-allowed; }
+        button.ui-btn { padding: 10px 20px; border-radius: 5px; border: none; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        button.ui-btn:disabled { background: #ccc !important; cursor: not-allowed; }
         
-        #toggleSidebarBtn { background: #6c757d; margin-right: 15px; }
-        #toggleSidebarBtn:hover { background: #5a6268; }
+        #toggleSidebarBtn { background: #6c757d; }
         #connectBtn { background: #007bff; }
-        #connectBtn:hover { background: #0056b3; }
         #runBtn { background: #28a745; }
-        #runBtn:hover { background: #218838; }
         #stopBtn { background: #dc3545; }
-        #stopBtn:hover { background: #c82333; }
+        
         .status { font-size: 0.9em; color: #555; font-weight: 500; margin-left: auto;}
         
+        #langSelect { padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-weight: bold; cursor: pointer; background: white; }
+
         #blocklyDiv { flex: 1; border: 1px solid #ddd; border-radius: 8px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
         .code-container { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .code-container summary { font-size: 1.1em; font-weight: bold; cursor: pointer; color: #333; outline: none; }
@@ -81,14 +69,20 @@
 </head>
 <body>
 
-    <h2>IdeaScratch v1.30</h2>
+    <header>
+        <h2 id="titleLabel">IdeaScratch v1.31</h2>
+        <select id="langSelect" onchange="changeLanguage(this.value)">
+            <option value="en">English</option>
+            <option value="cr">Español (Costa Rica)</option>
+        </select>
+    </header>
 
     <div id="app-layout">
         
         <div class="sim-sidebar" id="simSidebar">
             <div class="sim-inner">
                 <div class="sim-controls">
-                    <button class="sim-btn" onclick="runSimulator()">▶ Play Sim</button>
+                    <button class="sim-btn" onclick="runSimulator()" id="playSimLabel">▶ Play Sim</button>
                     <button class="sim-btn" id="stopSimBtn" onclick="stopSimulator()">⬛ Stop</button>
                 </div>
                 <div class="board-container">
@@ -100,216 +94,247 @@
         </div>
 
         <div class="ide-panel">
-            <div class="hardware-controls">
-                <button class="hw-btn" onclick="toggleSidebar()" id="toggleSidebarBtn">◀ Hide Simulator</button>
-                <strong>Hardware:</strong>
-                <button class="hw-btn" onclick="toggleConnection()" id="connectBtn">Connect</button>
-                <button class="hw-btn" onclick="runCode()" id="runBtn" disabled>Run</button>
-                <button class="hw-btn" onclick="stopCode()" id="stopBtn" disabled>Stop</button>
+            <div class="controls-bar">
+                <button class="ui-btn" onclick="toggleSidebar()" id="toggleSidebarBtn">◀ Hide Simulator</button>
+                <button class="ui-btn" onclick="toggleConnection()" id="connectBtn">Connect</button>
+                <button class="hw-btn ui-btn" onclick="runCode()" id="runBtn" disabled>Run</button>
+                <button class="hw-btn ui-btn" onclick="stopCode()" id="stopBtn" disabled>Stop</button>
                 <span id="statusLabel" class="status">Status: Disconnected</span>
             </div>
             
             <div id="blocklyDiv"></div>
             
             <details class="code-container" id="pythonDetails">
-                <summary>Generated CircuitPython (code.py) ▾</summary>
+                <summary id="pyPreviewLabel">Generated CircuitPython (code.py) ▾</summary>
                 <div id="codePreview"># Code will appear here...</div>
             </details>
 
             <details class="code-container" open id="consoleDetails">
-                <summary>Output Console ▾</summary>
+                <summary id="consoleLabel">Output Console ▾</summary>
                 <div id="simConsole"></div>
-                <button onclick="document.getElementById('simConsole').innerHTML=''" style="margin-top:10px; background:#6c757d; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Clear Console</button>
+                <button onclick="document.getElementById('simConsole').innerHTML=''" style="margin-top:10px; background:#6c757d; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; font-weight:bold;" id="clearConsoleLabel">Clear Console</button>
             </details>
         </div>
     </div>
 
     <xml id="toolbox" style="display: none">
-        <category name="IdeaBoard" colour="230">
+        <category name="IdeaBoard" id="catIdeaBoard" colour="230">
             <block type="ib_pixel"></block>
         </category>
-        <category name="Events" colour="65">
+        <category name="Events" id="catEvents" colour="65">
             <block type="ib_event_handler"></block>
             <block type="ib_event_state"></block>
         </category>
-        <category name="Logic" colour="210">
+        <category name="Logic" id="catLogic" colour="210">
             <block type="controls_if"></block>
         </category>
-        <category name="Control" colour="120">
+        <category name="Control" id="catControl" colour="120">
             <block type="controls_forever"></block>
             <block type="time_sleep"></block>
         </category>
-        <category name="Text" colour="160">
+        <category name="Text" id="catText" colour="160">
             <block type="text_print"></block>
             <block type="text"></block>
         </category>
     </xml>
 
     <script>
-        // --- 1. BLOCK DEFINITIONS ---
-        Blockly.common.defineBlocksWithJsonArray([
-            {
-                "type": "ib_pixel",
-                "message0": "Set IdeaBoard Pixel to %1",
-                "args0": [
-                    {
-                        "type": "field_dropdown",
-                        "name": "COLOUR",
-                        "options": [
-                            ["🔴 Red", "255, 0, 0"], ["🟢 Green", "0, 255, 0"], ["🔵 Blue", "0, 0, 255"],
-                            ["🟡 Yellow", "255, 255, 0"], ["🟣 Purple", "128, 0, 128"],
-                            ["⚪ White", "255, 255, 255"], ["⚫ Off (Black)", "0, 0, 0"]
-                        ]
-                    }
-                ],
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": 230
+        // --- 1. LOCALIZATION SYSTEM ---
+        const translations = {
+            en: {
+                hideSim: "◀ Hide Simulator",
+                showSim: "▶ Show Simulator",
+                connect: "Connect",
+                disconnect: "Disconnect",
+                run: "Run",
+                stop: "Stop",
+                statusDisc: "Status: Disconnected",
+                statusOnline: "Status: Online",
+                statusFlashing: "Status: Flashing...",
+                statusStopped: "Status: Code Stopped",
+                statusRun: "Status: Success! Code is running.",
+                pyPreview: "Generated CircuitPython (code.py) ▾",
+                console: "Output Console ▾",
+                clear: "Clear Console",
+                playSim: "▶ Play Sim",
+                catIB: "IdeaBoard",
+                catEv: "Events",
+                catLo: "Logic",
+                catCo: "Control",
+                catTe: "Text",
+                blockPixel: "Set IdeaBoard Pixel to %1",
+                blockCheck: "Check Boot button events %1 %2",
+                blockIs: "Event is %1",
+                blockPressed: "pressed",
+                blockReleased: "released",
+                blockForever: "Forever %1 %2",
+                blockWait: "Wait %1 seconds",
+                startMsg: "System Ready! Waiting for button...",
+                simStart: "--- Simulator Started ---",
+                simStop: "--- Simulator Stopped ---",
+                hwConnect: "--- Hardware Connected ---",
+                hwFlash: "--- Flashing Code to Hardware ---"
             },
-            {
-                "type": "time_sleep",
-                "message0": "Wait %1 seconds",
-                "args0": [{"type": "field_number", "name": "SECONDS", "value": 1}],
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": 160
-            },
-            {
-                "type": "controls_forever",
-                "message0": "Forever %1 %2",
-                "args0": [{"type": "input_dummy"}, {"type": "input_statement", "name": "DO"}],
-                "previousStatement": null, 
-                "colour": 120
-            },
-            {
-                "type": "ib_event_handler",
-                "message0": "Check Boot button events %1 %2",
-                "args0": [
-                    {"type": "input_dummy"},
-                    {"type": "input_statement", "name": "DO"}
-                ],
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": 65
-            },
-            {
-                "type": "ib_event_state",
-                "message0": "Event is %1",
-                "args0": [
-                    {
-                        "type": "field_dropdown",
-                        "name": "STATE",
-                        "options": [
-                            ["pressed", "pressed"],
-                            ["released", "released"]
-                        ]
-                    }
-                ],
-                "output": "Boolean",
-                "colour": 65
+            cr: {
+                hideSim: "◀ Esconder Simulador",
+                showSim: "▶ Mostrar Simulador",
+                connect: "Conectar",
+                disconnect: "Desconectar",
+                run: "Darle",
+                stop: "Parar",
+                statusDisc: "Estado: Desconectado",
+                statusOnline: "Estado: En línea",
+                statusFlashing: "Estado: Flasheando...",
+                statusStopped: "Estado: Código frenado",
+                statusRun: "Estado: ¡Pura vida! Ya está corriendo.",
+                pyPreview: "CircuitPython generado (code.py) ▾",
+                console: "Consola de salida ▾",
+                clear: "Limpiar consola",
+                playSim: "▶ Probar simulador",
+                catIB: "Tarjeta",
+                catEv: "Eventos",
+                catLo: "Lógica",
+                catCo: "Control",
+                catTe: "Texto",
+                blockPixel: "Poner Píxel en %1",
+                blockCheck: "Revisar botón Boot %1 %2",
+                blockIs: "El evento es %1",
+                blockPressed: "presionado",
+                blockReleased: "soltado",
+                blockForever: "Por siempre %1 %2",
+                blockWait: "Esperar %1 segundos",
+                startMsg: "¡Todo listo! Toque el botón...",
+                simStart: "--- Simulador iniciado ---",
+                simStop: "--- Simulador detenido ---",
+                hwConnect: "--- Tarjeta conectada ---",
+                hwFlash: "--- Flasheando el código ---"
             }
-        ]);
+        };
 
-        // --- 2. PYTHON GENERATORS ---
-        python.pythonGenerator.forBlock['ib_pixel'] = function(block) {
-            return `ib.pixel = (${block.getFieldValue('COLOUR')})\n`;
-        };
-        python.pythonGenerator.forBlock['time_sleep'] = function(block) {
-            return `sleep(${block.getFieldValue('SECONDS') || 1})\n`;
-        };
+        let currentLang = 'en';
+
+        function updateUI() {
+            const t = translations[currentLang];
+            document.getElementById('toggleSidebarBtn').innerText = isSidebarHidden ? t.showSim : t.hideSim;
+            document.getElementById('connectBtn').innerText = isConnected ? t.disconnect : t.connect;
+            document.getElementById('runBtn').innerText = t.run;
+            document.getElementById('stopBtn').innerText = t.stop;
+            document.getElementById('pyPreviewLabel').innerText = t.pyPreview;
+            document.getElementById('consoleLabel').innerText = t.console;
+            document.getElementById('clearConsoleLabel').innerText = t.clear;
+            document.getElementById('playSimLabel').innerText = t.playSim;
+            
+            // Update Toolbox
+            document.getElementById('catIdeaBoard').setAttribute('name', t.catIB);
+            document.getElementById('catEvents').setAttribute('name', t.catEv);
+            document.getElementById('catLogic').setAttribute('name', t.catLo);
+            document.getElementById('catControl').setAttribute('name', t.catCo);
+            document.getElementById('catText').setAttribute('name', t.catTe);
+            workspace.updateToolbox(document.getElementById('toolbox'));
+
+            // Status depends on specific state
+            if (!isConnected) document.getElementById('statusLabel').innerText = t.statusDisc;
+            else document.getElementById('statusLabel').innerText = t.statusOnline;
+
+            // Re-define blocks with translated labels
+            defineTranslatedBlocks();
+        }
+
+        function defineTranslatedBlocks() {
+            const t = translations[currentLang];
+            Blockly.Blocks['ib_pixel'].jsonInit({
+                "message0": t.blockPixel,
+                "args0": [{"type": "field_dropdown", "name": "COLOUR", "options": [["🔴 Red", "255, 0, 0"], ["🟢 Green", "0, 255, 0"], ["🔵 Blue", "0, 0, 255"], ["🟡 Yellow", "255, 255, 0"], ["🟣 Purple", "128, 0, 128"], ["⚪ White", "255, 255, 255"], ["⚫ Off", "0, 0, 0"]]}],
+                "previousStatement": null, "nextStatement": null, "colour": 230
+            });
+            Blockly.Blocks['ib_event_handler'].jsonInit({
+                "message0": t.blockCheck,
+                "args0": [{"type": "input_dummy"}, {"type": "input_statement", "name": "DO"}],
+                "previousStatement": null, "nextStatement": null, "colour": 65
+            });
+            Blockly.Blocks['ib_event_state'].jsonInit({
+                "message0": t.blockIs,
+                "args0": [{"type": "field_dropdown", "name": "STATE", "options": [[t.blockPressed, "pressed"], [t.blockReleased, "released"]]}],
+                "output": "Boolean", "colour": 65
+            });
+            Blockly.Blocks['controls_forever'].jsonInit({
+                "message0": t.blockForever,
+                "args0": [{"type": "input_dummy"}, {"type": "input_statement", "name": "DO"}],
+                "previousStatement": null, "colour": 120
+            });
+            Blockly.Blocks['time_sleep'].jsonInit({
+                "message0": t.blockWait,
+                "args0": [{"type": "field_number", "name": "SECONDS", "value": 1}],
+                "previousStatement": null, "nextStatement": null, "colour": 160
+            });
+        }
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            updateUI();
+        }
+
+        // --- 2. BLOCK DEFINITIONS (STUBS) ---
+        // These are registered once, then updated by jsonInit in updateUI()
+        Blockly.Blocks['ib_pixel'] = { init: function() {} };
+        Blockly.Blocks['ib_event_handler'] = { init: function() {} };
+        Blockly.Blocks['ib_event_state'] = { init: function() {} };
+        Blockly.Blocks['controls_forever'] = { init: function() {} };
+        Blockly.Blocks['time_sleep'] = { init: function() {} };
+
+        // --- 3. GENERATORS ---
+        python.pythonGenerator.forBlock['ib_pixel'] = function(block) { return `ib.pixel = (${block.getFieldValue('COLOUR')})\n`; };
+        python.pythonGenerator.forBlock['time_sleep'] = function(block) { return `sleep(${block.getFieldValue('SECONDS') || 1})\n`; };
         python.pythonGenerator.forBlock['controls_forever'] = function(block) {
             const indent = python.pythonGenerator.INDENT || '  ';
-            let branch = python.pythonGenerator.statementToCode(block, 'DO');
-            if (!branch) branch = indent + 'pass\n';
+            let branch = python.pythonGenerator.statementToCode(block, 'DO') || indent + 'pass\n';
             return `while True:\n${indent}sleep(0.01)\n${branch}`;
         };
         python.pythonGenerator.forBlock['ib_event_handler'] = function(block) {
             const indent = python.pythonGenerator.INDENT || '  ';
-            let branch = python.pythonGenerator.statementToCode(block, 'DO');
-            if (!branch) branch = indent + 'pass\n';
+            let branch = python.pythonGenerator.statementToCode(block, 'DO') || indent + 'pass\n';
             return `event = keys.events.get()\nif event:\n${branch}`;
         };
         python.pythonGenerator.forBlock['ib_event_state'] = function(block) {
-            const state = block.getFieldValue('STATE');
-            return [`event.${state}`, python.Order.ATOMIC];
+            return [`event.${block.getFieldValue('STATE')}`, python.Order.ATOMIC];
         };
 
-        // --- 3. JAVASCRIPT SIMULATOR GENERATORS ---
-        javascript.javascriptGenerator.forBlock['ib_pixel'] = function(block) {
-            return `setPixelColor('rgb(${block.getFieldValue('COLOUR')})');\n`;
-        };
-        javascript.javascriptGenerator.forBlock['time_sleep'] = function(block) {
-            return `await simSleep(${(block.getFieldValue('SECONDS') || 1) * 1000});\n`;
-        };
+        javascript.javascriptGenerator.forBlock['ib_pixel'] = function(block) { return `setPixelColor('rgb(${block.getFieldValue('COLOUR')})');\n`; };
+        javascript.javascriptGenerator.forBlock['time_sleep'] = function(block) { return `await simSleep(${(block.getFieldValue('SECONDS') || 1) * 1000});\n`; };
         javascript.javascriptGenerator.forBlock['controls_forever'] = function(block) {
-            const branch = javascript.javascriptGenerator.statementToCode(block, 'DO');
-            return `while (simIsRunning) {\n${branch}\n  await simSleep(20);\n}\n`;
+            return `while (simIsRunning) {\n${javascript.javascriptGenerator.statementToCode(block, 'DO')}\n  await simSleep(20);\n}\n`;
         };
         javascript.javascriptGenerator.forBlock['ib_event_handler'] = function(block) {
-            const branch = javascript.javascriptGenerator.statementToCode(block, 'DO');
-            return `let _sim_event = simEventQueue.shift();\nif (_sim_event) {\n${branch}}\n`;
+            return `let _sim_event = simEventQueue.shift();\nif (_sim_event) {\n${javascript.javascriptGenerator.statementToCode(block, 'DO')}}\n`;
         };
         javascript.javascriptGenerator.forBlock['ib_event_state'] = function(block) {
-            const state = block.getFieldValue('STATE');
-            return [`(_sim_event === '${state}')`, javascript.Order.ATOMIC];
+            return [`(_sim_event === '${block.getFieldValue('STATE')}')`, javascript.Order.ATOMIC];
         };
         javascript.javascriptGenerator.forBlock['text_print'] = function(block) {
             const msg = javascript.javascriptGenerator.valueToCode(block, 'TEXT', javascript.javascriptGenerator.ORDER_NONE) || "''";
             return `printToConsole(${msg}, false, 'normal');\n`;
         };
 
-        // --- 4. WORKSPACE INITIALIZATION ---
+        // --- 4. INITIALIZATION ---
         const workspace = Blockly.inject('blocklyDiv', {
             toolbox: document.getElementById('toolbox'),
             grid: {spacing: 20, length: 3, colour: '#ccc', snap: true},
             trashcan: true
         });
 
-        const defaultBlocksXml = `
-        <xml xmlns="https://developers.google.com/blockly/xml">
+        defineTranslatedBlocks();
+        updateUI();
+
+        const defaultBlocksXml = `<xml xmlns="https://developers.google.com/blockly/xml">
           <block type="text_print" x="20" y="20">
-            <value name="TEXT">
-              <shadow type="text"><field name="TEXT">System Ready! Waiting for button...</field></shadow>
-            </value>
-            <next>
-              <block type="controls_forever">
-                <statement name="DO">
-                  <block type="ib_event_handler">
-                    <statement name="DO">
-                      <block type="controls_if">
-                        <mutation elseif="1"></mutation>
-                        <value name="IF0">
-                          <block type="ib_event_state"><field name="STATE">released</field></block>
-                        </value>
-                        <statement name="DO0">
-                          <block type="ib_pixel"><field name="COLOUR">0, 0, 0</field>
-                            <next>
-                              <block type="text_print">
-                                <value name="TEXT"><shadow type="text"><field name="TEXT">released</field></shadow></value>
-                              </block>
-                            </next>
-                          </block>
-                        </statement>
-                        <value name="IF1">
-                          <block type="ib_event_state"><field name="STATE">pressed</field></block>
-                        </value>
-                        <statement name="DO1">
-                          <block type="ib_pixel"><field name="COLOUR">0, 255, 0</field>
-                            <next>
-                              <block type="text_print">
-                                <value name="TEXT"><shadow type="text"><field name="TEXT">pressed</field></shadow></value>
-                              </block>
-                            </next>
-                          </block>
-                        </statement>
-                      </block>
-                    </statement>
-                  </block>
-                </statement>
-              </block>
-            </next>
-          </block>
-        </xml>`;
+            <value name="TEXT"><shadow type="text"><field name="TEXT">System Ready!</field></shadow></value>
+            <next><block type="controls_forever"><statement name="DO"><block type="ib_event_handler"><statement name="DO">
+            <block type="controls_if"><mutation elseif="1"></mutation>
+            <value name="IF0"><block type="ib_event_state"><field name="STATE">released</field></block></value>
+            <statement name="DO0"><block type="ib_pixel"><field name="COLOUR">0, 0, 0</field></block></statement>
+            <value name="IF1"><block type="ib_event_state"><field name="STATE">pressed</field></block></value>
+            <statement name="DO1"><block type="ib_pixel"><field name="COLOUR">0, 255, 0</field></block></statement>
+            </block></statement></block></statement></block></next></block></xml>`;
         Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(defaultBlocksXml), workspace);
 
         workspace.addChangeListener(() => {
@@ -318,113 +343,53 @@
             document.getElementById('codePreview').innerText = header + generatedCode;
         });
 
-        // --- NEW: Fix Blockly Resize Bug ---
-        // Forces Blockly to redraw when panels are opened/closed or window resizes
-        const resizeBlockly = () => {
-            setTimeout(() => { Blockly.svgResize(workspace); }, 50);
-        };
-        window.addEventListener('resize', resizeBlockly);
-        document.querySelectorAll('details').forEach(detail => {
-            detail.addEventListener('toggle', resizeBlockly);
-        });
+        window.addEventListener('resize', () => { setTimeout(() => Blockly.svgResize(workspace), 50); });
+        document.querySelectorAll('details').forEach(detail => { detail.addEventListener('toggle', () => { setTimeout(() => Blockly.svgResize(workspace), 50); }); });
 
+        // --- 5. LOGIC & SERIAL ---
+        let isSidebarHidden = false;
         function toggleSidebar() {
             const sidebar = document.getElementById('simSidebar');
             const btn = document.getElementById('toggleSidebarBtn');
+            isSidebarHidden = !isSidebarHidden;
             sidebar.classList.toggle('collapsed');
+            btn.innerText = isSidebarHidden ? translations[currentLang].showSim : translations[currentLang].hideSim;
             setTimeout(() => Blockly.svgResize(workspace), 310); 
-            if (sidebar.classList.contains('collapsed')) {
-                btn.innerText = "▶ Show Simulator";
-            } else {
-                btn.innerText = "◀ Hide Simulator";
-            }
         }
 
-        // --- 5. SIMULATOR & CONSOLE LOGIC ---
         let simIsRunning = false;
         let simEventQueue = []; 
-        
         function simSleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-
         function setPixelColor(rgbString) {
             const pixel = document.getElementById('sim-pixel');
-            if (rgbString === 'rgb(0, 0, 0)') {
-                pixel.style.backgroundColor = 'rgba(0,0,0,0.5)';
-                pixel.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.5)';
-            } else {
-                pixel.style.backgroundColor = rgbString;
-                pixel.style.boxShadow = `0 0 15px 5px ${rgbString}, inset 0 0 5px white`;
-            }
+            if (rgbString === 'rgb(0, 0, 0)') { pixel.style.backgroundColor = 'rgba(0,0,0,0.5)'; pixel.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.5)'; }
+            else { pixel.style.backgroundColor = rgbString; pixel.style.boxShadow = `0 0 15px 5px ${rgbString}, inset 0 0 5px white`; }
         }
 
         function printToConsole(msg, isHardware = false, type = 'normal') {
             const cons = document.getElementById('simConsole');
-            let cleanMsg = msg;
-            let cssClass = "";
-            
-            if (isHardware) {
-                cleanMsg = msg.replace(/\r/g, ''); 
-                if (cleanMsg.includes("Traceback") || cleanMsg.includes("Error:") || cleanMsg.includes("Exception")) {
-                    cssClass = "error-text";
-                }
-            } else {
-                cleanMsg = msg + '\n';
-                if (type === 'sys') cssClass = "sys-text";
-            }
-
-            if (cssClass) {
-                cons.innerHTML += `<span class="${cssClass}">${cleanMsg}</span>`;
-            } else {
-                const textNode = document.createTextNode(cleanMsg);
-                cons.appendChild(textNode);
-            }
+            let cleanMsg = isHardware ? msg.replace(/\r/g, '') : msg + '\n';
+            let cssClass = isHardware && (cleanMsg.includes("Traceback") || cleanMsg.includes("Error:")) ? "error-text" : (type === 'sys' ? "sys-text" : "");
+            if (cssClass) cons.innerHTML += `<span class="${cssClass}">${cleanMsg}</span>`;
+            else cons.appendChild(document.createTextNode(cleanMsg));
             cons.scrollTop = cons.scrollHeight;
         }
-        
-        // --- BIND HITBOX EVENTS ---
+
         const bootHitbox = document.getElementById('sim-boot-hitbox');
-        
         bootHitbox.addEventListener('mousedown', () => simEventQueue.push('pressed'));
         bootHitbox.addEventListener('mouseup', () => simEventQueue.push('released'));
-        bootHitbox.addEventListener('mouseleave', (e) => {
-            if (e.buttons === 1) simEventQueue.push('released');
-        });
-        
-        bootHitbox.addEventListener('touchstart', (e) => {
-            e.preventDefault(); 
-            simEventQueue.push('pressed');
-        });
-        bootHitbox.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            simEventQueue.push('released');
-        });
 
         async function runSimulator() {
-            simIsRunning = false; 
-            await simSleep(50);   
-            simIsRunning = true;
-            simEventQueue = [];
-            printToConsole("--- Simulator Started ---", false, 'sys');
-            
+            simIsRunning = false; await simSleep(50); simIsRunning = true; simEventQueue = [];
+            printToConsole(translations[currentLang].simStart, false, 'sys');
             const jsCode = javascript.javascriptGenerator.workspaceToCode(workspace);
             const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
-            const executeSim = new AsyncFunction(jsCode);
-            try { await executeSim(); } catch (err) { console.error("Simulator error:", err); }
+            try { await (new AsyncFunction(jsCode))(); } catch (err) { console.error(err); }
         }
 
-        function stopSimulator() {
-            simIsRunning = false;
-            setPixelColor('rgb(0, 0, 0)'); 
-            printToConsole("--- Simulator Stopped ---", false, 'sys');
-        }
+        function stopSimulator() { simIsRunning = false; setPixelColor('rgb(0, 0, 0)'); printToConsole(translations[currentLang].simStop, false, 'sys'); }
 
-        // --- 6. HARDWARE SERIAL LOGIC ---
-        let boardPort = null;
-        let boardWriter = null;
-        let serialReader = null;
-        let isConnected = false;
-        let isFlashing = false; 
-        let keepReading = false;
+        let boardPort = null, boardWriter = null, serialReader = null, isConnected = false, isFlashing = false, keepReading = false;
 
         async function readLoop() {
             const decoder = new TextDecoder();
@@ -434,105 +399,62 @@
                     while (true) {
                         const { value, done } = await serialReader.read();
                         if (done) break;
-                        
-                        if (!isFlashing && value) {
-                            const text = decoder.decode(value, {stream: true});
-                            printToConsole(text, true);
-                        }
+                        if (!isFlashing && value) printToConsole(decoder.decode(value, {stream: true}), true);
                     }
-                } catch (error) {
-                    console.error("Serial read error:", error);
-                    break;
-                } finally {
-                    if (serialReader) {
-                        serialReader.releaseLock();
-                        serialReader = null;
-                    }
-                }
+                } catch (error) { break; } finally { if (serialReader) serialReader.releaseLock(); }
             }
         }
 
         async function toggleConnection() {
+            const t = translations[currentLang];
             if (isConnected) {
-                try {
-                    keepReading = false;
-                    if (serialReader) { await serialReader.cancel(); }
-                    if (boardWriter) { boardWriter.releaseLock(); boardWriter = null; }
-                    if (boardPort) { await boardPort.close(); boardPort = null; }
-                    isConnected = false;
-                    document.getElementById('connectBtn').innerText = "Connect";
-                    document.getElementById('connectBtn').style.background = "#007bff";
-                    document.getElementById('runBtn').disabled = true;
-                    document.getElementById('stopBtn').disabled = true;
-                    document.getElementById('statusLabel').innerText = "Status: Disconnected";
-                } catch (err) { console.error("Disconnect error:", err); }
+                keepReading = false; if (serialReader) await serialReader.cancel();
+                if (boardWriter) { boardWriter.releaseLock(); boardWriter = null; }
+                if (boardPort) { await boardPort.close(); boardPort = null; }
+                isConnected = false;
+                document.getElementById('connectBtn').innerText = t.connect;
+                document.getElementById('connectBtn').style.background = "#007bff";
+                document.getElementById('runBtn').disabled = true; document.getElementById('stopBtn').disabled = true;
+                document.getElementById('statusLabel').innerText = t.statusDisc;
             } else {
                 try {
                     boardPort = await navigator.serial.requestPort();
                     await boardPort.open({ baudRate: 115200 });
                     boardWriter = boardPort.writable.getWriter();
-                    isConnected = true;
-                    keepReading = true;
-                    
-                    readLoop(); 
-                    
-                    document.getElementById('connectBtn').innerText = "Disconnect";
+                    isConnected = true; keepReading = true; readLoop();
+                    document.getElementById('connectBtn').innerText = t.disconnect;
                     document.getElementById('connectBtn').style.background = "#6c757d";
-                    document.getElementById('runBtn').disabled = false;
-                    document.getElementById('stopBtn').disabled = false;
-                    document.getElementById('statusLabel').innerText = "Status: Online";
-                    printToConsole("--- Hardware Connected ---", false, 'sys');
-                } catch (err) { 
-                    console.error(err);
-                    alert("Could not connect. Ensure no other apps (like Thonny) are using the port.");
-                }
+                    document.getElementById('runBtn').disabled = false; document.getElementById('stopBtn').disabled = false;
+                    document.getElementById('statusLabel').innerText = t.statusOnline;
+                    printToConsole(t.hwConnect, false, 'sys');
+                } catch (err) { alert("Error connecting."); }
             }
         }
 
         async function stopCode() {
             if (!boardWriter || !isConnected) return;
-            try {
-                isFlashing = true; 
-                const encoder = new TextEncoder();
-                await boardWriter.write(encoder.encode('\x03')); 
-                document.getElementById('statusLabel').innerText = "Status: Code Stopped";
-                setTimeout(() => { isFlashing = false; }, 200);
-            } catch(err) {}
+            isFlashing = true; 
+            await boardWriter.write((new TextEncoder()).encode('\x03'));
+            document.getElementById('statusLabel').innerText = translations[currentLang].statusStopped;
+            setTimeout(() => { isFlashing = false; }, 200);
         }
 
         async function runCode() {
             if (!boardWriter) return;
-            document.getElementById('statusLabel').innerText = "Status: Flashing...";
-            
-            isFlashing = true; 
-            printToConsole("--- Flashing Code to Hardware ---", false, 'sys');
-
-            const rawBlockCode = python.pythonGenerator.workspaceToCode(workspace);
-            const pyHeader = `import board\nfrom ideaboard import IdeaBoard\nfrom time import sleep\nimport keypad\n\nib = IdeaBoard()\nkeys = keypad.Keys((board.IO0,), value_when_pressed=False, pull=True)\n\n`;
-            const code = pyHeader + rawBlockCode;
-            
-            const encoder = new TextEncoder();
+            const t = translations[currentLang];
+            document.getElementById('statusLabel').innerText = t.statusFlashing;
+            isFlashing = true; printToConsole(t.hwFlash, false, 'sys');
+            const code = `import board\nfrom ideaboard import IdeaBoard\nfrom time import sleep\nimport keypad\n\nib = IdeaBoard()\nkeys = keypad.Keys((board.IO0,), value_when_pressed=False, pull=True)\n\n` + python.pythonGenerator.workspaceToCode(workspace);
+            const enc = new TextEncoder();
             try {
-                await boardWriter.write(encoder.encode('\x03\x03')); 
-                await new Promise(r => setTimeout(r, 300));
-                await boardWriter.write(encoder.encode('\x01')); 
-                await new Promise(r => setTimeout(r, 300));
-                const transferScript = `f=open('code.py','w');f.write('''${code}''');f.close()\n`;
-                await boardWriter.write(encoder.encode(transferScript));
-                await boardWriter.write(encoder.encode('\x04')); 
-                await new Promise(r => setTimeout(r, 600)); 
-                await boardWriter.write(encoder.encode('\x02')); 
-                await new Promise(r => setTimeout(r, 200));
-                
-                isFlashing = false; 
-                await boardWriter.write(encoder.encode('\x04')); 
-                
-                document.getElementById('statusLabel').innerText = "Status: Success! Code is running.";
-            } catch (err) {
-                console.error("Flash failed", err);
-                document.getElementById('statusLabel').innerText = "Status: Error flashing.";
-                isFlashing = false;
-            }
+                await boardWriter.write(enc.encode('\x03\x03')); await simSleep(300);
+                await boardWriter.write(enc.encode('\x01')); await simSleep(300);
+                await boardWriter.write(enc.encode(`f=open('code.py','w');f.write('''${code}''');f.close()\n`));
+                await boardWriter.write(enc.encode('\x04')); await simSleep(600);
+                await boardWriter.write(enc.encode('\x02')); await simSleep(200);
+                isFlashing = false; await boardWriter.write(enc.encode('\x04'));
+                document.getElementById('statusLabel').innerText = t.statusRun;
+            } catch (err) { isFlashing = false; }
         }
     </script>
 </body>
