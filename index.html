@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaScratch v1.31</title>
+    <title>IdeaScratch v1.32</title>
 
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -12,7 +12,7 @@
 </head>
 <body>
 
-    <h2>IdeaScratch v1.31</h2>
+    <h2>IdeaScratch v1.32</h2>
 
     <div id="app-layout">
 
@@ -33,6 +33,21 @@
         <div class="ide-panel">
             <div class="hardware-controls">
                 <button class="hw-btn" onclick="toggleSidebar()" id="toggleSidebarBtn">◀ Hide Simulator</button>
+
+                <div class="dropdown-wrapper">
+                    <button class="hw-btn" onclick="toggleDropdown('examplesMenu')">Examples ▾</button>
+                    <div class="dropdown-menu" id="examplesMenu">
+                        <div class="dropdown-item" onclick="loadExample('buttonLED')">Button &amp; LED</div>
+                        <div class="dropdown-item" onclick="loadExample('blink')">Blink</div>
+                        <div class="dropdown-item" onclick="loadExample('motorForward')">Motor Forward</div>
+                    </div>
+                </div>
+
+                <div class="dropdown-wrapper">
+                    <button class="hw-btn" onclick="toggleDropdown('projectsMenu')">My Projects ▾</button>
+                    <div class="dropdown-menu" id="projectsMenu"></div>
+                </div>
+
                 <strong>Hardware:</strong>
                 <button class="hw-btn" onclick="toggleConnection()" id="connectBtn">Connect</button>
                 <button class="hw-btn" onclick="runCode()" id="runBtn" disabled>Run</button>
@@ -81,6 +96,7 @@
     <script src="js/generators.js"></script>
     <script src="js/simulator.js"></script>
     <script src="js/serial.js"></script>
+    <script src="js/storage.js"></script>
     <script src="js/workspace.js"></script>
 
 </body>

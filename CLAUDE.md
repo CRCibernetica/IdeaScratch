@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-IdeaScratch (v1.31) is a browser-based visual programming IDE for the **IdeaBoard** microcontroller. Users drag-and-drop Blockly blocks to generate CircuitPython code, then either simulate it in the browser or flash it to real hardware via Web Serial API.
+IdeaScratch (v1.32) is a browser-based visual programming IDE for the **IdeaBoard** microcontroller. Users drag-and-drop Blockly blocks to generate CircuitPython code, then either simulate it in the browser or flash it to real hardware via Web Serial API.
 
 ## Running the App
 
@@ -37,7 +37,8 @@ Increment the minor version (e.g. v1.30 → v1.31) for each change unless the us
 | `js/generators.js` | Python + JS code generators for each block |
 | `js/simulator.js` | Simulator state, pixel, console, boot button events |
 | `js/serial.js` | Web Serial connection, flash, read loop |
-| `js/workspace.js` | Blockly init, default XML, resize logic, `toggleSidebar` — loads last |
+| `js/storage.js` | Examples (XML), `localStorage` save/load/delete, dropdown logic |
+| `js/workspace.js` | Blockly init, resize logic, `toggleSidebar` — loads last |
 
 ### Dual-path execution model
 
