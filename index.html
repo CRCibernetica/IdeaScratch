@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaBoard Blockly IDE v1.15</title>
+    <title>IdeaBoard Blockly IDE v1.16</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -16,22 +16,20 @@
         
         /* --- Left Panel: Horizontal Sliding Sidebar --- */
         .sim-sidebar { 
-            width: 400px; /* Much wider default size */
+            width: 400px; 
             background: white; 
             border-radius: 8px; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
             flex-shrink: 0; 
             transition: width 0.3s ease, margin 0.3s ease, opacity 0.3s ease;
-            overflow: hidden; /* Hides content when width goes to 0 */
+            overflow: hidden; 
         }
         
-        /* When collapsed, shrink to 0 width and fade out */
         .sim-sidebar.collapsed {
             width: 0px;
             opacity: 0;
         }
 
-        /* Inner container keeps fixed dimensions so the board doesn't squish during the slide animation */
         .sim-inner {
             width: 360px; 
             padding: 20px; 
@@ -46,15 +44,21 @@
         #stopSimBtn { background: #dc3545; }
         #stopSimBtn:hover { background: #c82333; }
         
-        /* The Board Container (Significantly larger now) */
+        /* --- SVG SIZING FIX --- */
         .board-container { 
             position: relative; 
-            width: 320px; /* Increased from 250px */
-            height: auto; 
+            width: 300px; /* Fixed standard size */
             margin: 0 auto; 
             filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2));
+            /* Ensure container tightly hugs the image */
+            display: block; 
         }
-        .board-img { width: 100%; display: block; }
+        .board-img { 
+            width: 100%; 
+            min-width: 100%; /* Forces stubborn SVGs to stretch */
+            height: auto; 
+            display: block; 
+        }
         
         /* The Virtual NeoPixel */
         #sim-pixel {
@@ -62,7 +66,7 @@
             top: 40.5%; 
             left: 36.5%; 
             
-            width: 24px; /* Scaled up to match bigger board */
+            width: 24px; 
             height: 24px;
             transform: translate(-50%, -50%); 
             
@@ -81,7 +85,6 @@
         button.hw-btn { padding: 10px 20px; border-radius: 5px; border: none; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s; }
         button.hw-btn:disabled { background: #ccc !important; cursor: not-allowed; }
         
-        /* The new sidebar toggle button */
         #toggleSidebarBtn { background: #6c757d; margin-right: 15px; }
         #toggleSidebarBtn:hover { background: #5a6268; }
 
@@ -102,7 +105,7 @@
 </head>
 <body>
 
-    <h2>IdeaBoard IDE + Simulator v1.15</h2>
+    <h2>IdeaBoard IDE + Simulator v1.16</h2>
 
     <div id="app-layout">
         
@@ -126,7 +129,7 @@
                 
                 <strong>Hardware:</strong>
                 <button class="hw-btn" onclick="toggleConnection()" id="connectBtn">Connect</button>
-                <button class="hw-btn" onclick="runCode()" id="runBtn" disabled>Flash & Run</button>
+                <button class="hw-btn" onclick="runCode()" id="runBtn" disabled>Run</button>
                 <button class="hw-btn" onclick="stopCode()" id="stopBtn" disabled>Stop</button>
                 <span id="statusLabel" class="status">Status: Disconnected</span>
             </div>
@@ -255,17 +258,11 @@
             document.getElementById('codePreview').innerText = header + generatedCode;
         });
 
-        // --- NEW: Toggle UI Sidebar ---
         function toggleSidebar() {
             const sidebar = document.getElementById('simSidebar');
             const btn = document.getElementById('toggleSidebarBtn');
-            
-            // Toggle the CSS class
             sidebar.classList.toggle('collapsed');
-            
-            // Resize Blockly immediately to prevent rendering artifacts
             setTimeout(() => Blockly.svgResize(workspace), 310); 
-            
             if (sidebar.classList.contains('collapsed')) {
                 btn.innerText = "▶ Show Simulator";
             } else {
@@ -273,12 +270,8 @@
             }
         }
 
-        // --- SIMULATOR LOGIC ---
         let simIsRunning = false;
-        
-        function simSleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
+        function simSleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
         function setPixelColor(rgbString) {
             const pixel = document.getElementById('sim-pixel');
@@ -295,16 +288,10 @@
             simIsRunning = false; 
             await simSleep(50);   
             simIsRunning = true;
-            
             const jsCode = javascript.javascriptGenerator.workspaceToCode(workspace);
             const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
             const executeSim = new AsyncFunction(jsCode);
-            
-            try {
-                await executeSim(); 
-            } catch (err) {
-                console.error("Simulator error:", err);
-            }
+            try { await executeSim(); } catch (err) { console.error("Simulator error:", err); }
         }
 
         function stopSimulator() {
@@ -312,7 +299,6 @@
             setPixelColor('rgb(0, 0, 0)'); 
         }
 
-        // --- HARDWARE SERIAL LOGIC ---
         let boardPort = null;
         let boardWriter = null;
         let isConnected = false;
