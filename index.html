@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaBoard Blockly IDE v1.14</title>
+    <title>IdeaBoard Blockly IDE v1.15</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -14,31 +14,27 @@
         
         #app-layout { display: flex; gap: 20px; flex: 1; min-height: 0; align-items: flex-start; }
         
-        /* --- Left Panel: Collapsible Simulator --- */
-        .sim-wrapper { 
+        /* --- Left Panel: Horizontal Sliding Sidebar --- */
+        .sim-sidebar { 
+            width: 400px; /* Much wider default size */
             background: white; 
             border-radius: 8px; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-            /* Allows it to shrink when closed */
-            flex: 0 0 auto; 
+            flex-shrink: 0; 
+            transition: width 0.3s ease, margin 0.3s ease, opacity 0.3s ease;
+            overflow: hidden; /* Hides content when width goes to 0 */
         }
         
-        .sim-wrapper summary { 
-            font-size: 1.2em; 
-            font-weight: bold; 
-            padding: 15px 20px; 
-            cursor: pointer; 
-            outline: none; 
-            user-select: none;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-bottom: 1px solid #eee;
+        /* When collapsed, shrink to 0 width and fade out */
+        .sim-sidebar.collapsed {
+            width: 0px;
+            opacity: 0;
         }
-        .sim-wrapper summary:hover { color: #6f42c1; }
-        
-        .sim-panel { 
+
+        /* Inner container keeps fixed dimensions so the board doesn't squish during the slide animation */
+        .sim-inner {
+            width: 360px; 
             padding: 20px; 
-            width: 300px; /* Fixed width for the panel */
             display: flex; 
             flex-direction: column; 
             align-items: center; 
@@ -50,13 +46,12 @@
         #stopSimBtn { background: #dc3545; }
         #stopSimBtn:hover { background: #c82333; }
         
-        /* The Board Container (Fixed size to prevent scaling issues) */
+        /* The Board Container (Significantly larger now) */
         .board-container { 
             position: relative; 
-            width: 250px; /* Force the board to be a good size */
+            width: 320px; /* Increased from 250px */
             height: auto; 
             margin: 0 auto; 
-            /* Add a subtle drop shadow to the board itself */
             filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2));
         }
         .board-img { width: 100%; display: block; }
@@ -64,13 +59,11 @@
         /* The Virtual NeoPixel */
         #sim-pixel {
             position: absolute;
-            /* Recalibrated alignment coordinates */
             top: 40.5%; 
             left: 36.5%; 
             
-            width: 20px; /* Slightly smaller for a tighter fit */
-            height: 20px;
-            /* Transform translate keeps it perfectly centered on the coordinates */
+            width: 24px; /* Scaled up to match bigger board */
+            height: 24px;
             transform: translate(-50%, -50%); 
             
             border-radius: 50%;
@@ -84,9 +77,14 @@
         .ide-panel { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 0; height: 100%; }
         
         .hardware-controls { display: flex; gap: 10px; align-items: center; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #28a745;}
+        
         button.hw-btn { padding: 10px 20px; border-radius: 5px; border: none; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s; }
         button.hw-btn:disabled { background: #ccc !important; cursor: not-allowed; }
         
+        /* The new sidebar toggle button */
+        #toggleSidebarBtn { background: #6c757d; margin-right: 15px; }
+        #toggleSidebarBtn:hover { background: #5a6268; }
+
         #connectBtn { background: #007bff; }
         #connectBtn:hover { background: #0056b3; }
         #runBtn { background: #28a745; }
@@ -104,13 +102,12 @@
 </head>
 <body>
 
-    <h2>IdeaBoard IDE + Simulator v1.14</h2>
+    <h2>IdeaBoard IDE + Simulator v1.15</h2>
 
     <div id="app-layout">
         
-        <details class="sim-wrapper" open>
-            <summary>▶ Simulator Panel</summary>
-            <div class="sim-panel">
+        <div class="sim-sidebar" id="simSidebar">
+            <div class="sim-inner">
                 <div class="sim-controls">
                     <button class="sim-btn" onclick="runSimulator()">▶ Play Sim</button>
                     <button class="sim-btn" id="stopSimBtn" onclick="stopSimulator()">⬛ Stop</button>
@@ -121,10 +118,12 @@
                     <div id="sim-pixel"></div>
                 </div>
             </div>
-        </details>
+        </div>
 
         <div class="ide-panel">
             <div class="hardware-controls">
+                <button class="hw-btn" onclick="toggleSidebar()" id="toggleSidebarBtn">◀ Hide Simulator</button>
+                
                 <strong>Hardware:</strong>
                 <button class="hw-btn" onclick="toggleConnection()" id="connectBtn">Connect</button>
                 <button class="hw-btn" onclick="runCode()" id="runBtn" disabled>Flash & Run</button>
@@ -256,6 +255,25 @@
             document.getElementById('codePreview').innerText = header + generatedCode;
         });
 
+        // --- NEW: Toggle UI Sidebar ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('simSidebar');
+            const btn = document.getElementById('toggleSidebarBtn');
+            
+            // Toggle the CSS class
+            sidebar.classList.toggle('collapsed');
+            
+            // Resize Blockly immediately to prevent rendering artifacts
+            setTimeout(() => Blockly.svgResize(workspace), 310); 
+            
+            if (sidebar.classList.contains('collapsed')) {
+                btn.innerText = "▶ Show Simulator";
+            } else {
+                btn.innerText = "◀ Hide Simulator";
+            }
+        }
+
+        // --- SIMULATOR LOGIC ---
         let simIsRunning = false;
         
         function simSleep(ms) {
@@ -294,6 +312,7 @@
             setPixelColor('rgb(0, 0, 0)'); 
         }
 
+        // --- HARDWARE SERIAL LOGIC ---
         let boardPort = null;
         let boardWriter = null;
         let isConnected = false;
