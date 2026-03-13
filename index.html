@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaBoard Blockly IDE v1.16</title>
+    <title>IdeaBoard Blockly IDE v1.17</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -47,15 +47,14 @@
         /* --- SVG SIZING FIX --- */
         .board-container { 
             position: relative; 
-            width: 300px; /* Fixed standard size */
+            /* inline-block forces the container to hug the image perfectly */
+            display: inline-block; 
             margin: 0 auto; 
             filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2));
-            /* Ensure container tightly hugs the image */
-            display: block; 
         }
         .board-img { 
-            width: 100%; 
-            min-width: 100%; /* Forces stubborn SVGs to stretch */
+            /* Force an explicit pixel width to override stubborn SVGs */
+            width: 300px; 
             height: auto; 
             display: block; 
         }
@@ -63,8 +62,9 @@
         /* The Virtual NeoPixel */
         #sim-pixel {
             position: absolute;
-            top: 40.5%; 
-            left: 36.5%; 
+            /* Alignment Coordinates */
+            top: 42%; 
+            left: 32%; 
             
             width: 24px; 
             height: 24px;
@@ -105,7 +105,7 @@
 </head>
 <body>
 
-    <h2>IdeaBoard IDE + Simulator v1.16</h2>
+    <h2>IdeaBoard IDE + Simulator v1.17</h2>
 
     <div id="app-layout">
         
