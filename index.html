@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaBoard Blockly IDE v1.5</title>
+    <title>IdeaBoard Blockly IDE v1.6</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -27,7 +27,7 @@
 <body>
 
     <div id="app-container">
-        <h2>IdeaBoard Scratch Editor v1.5</h2>
+        <h2>IdeaBoard Scratch Editor v1.6</h2>
         
         <div class="controls">
             <button onclick="connectSerial()" id="connectBtn">Connect</button>
@@ -37,7 +37,7 @@
 
         <div id="blocklyDiv"></div>
         
-        <details class="code-container" open>
+        <details class="code-container">
             <summary>Generated CircuitPython (code.py) ▾</summary>
             <div id="codePreview"># Code will appear here...</div>
         </details>
@@ -157,21 +157,31 @@
             try {
                 document.getElementById('statusLabel').innerText = "Status: Flashing...";
                 
-                await boardWriter.write(encoder.encode('\x03\x03')); 
-                await new Promise(r => setTimeout(r, 300));
-
-                await boardWriter.write(encoder.encode('\x01')); 
-                await new Promise(r => setTimeout(r, 300));
+                // --- HARDENED SERIAL HANDSHAKE ---
                 
+                // 1. Interrupt running code (Staggered to ensure it catches)
+                await boardWriter.write(encoder.encode('\x03')); 
+                await new Promise(r => setTimeout(r, 100)); // Brief pause
+                await boardWriter.write(encoder.encode('\x03')); // Second hit
+                await new Promise(r => setTimeout(r, 400)); // Wait for traceback to clear
+
+                // 2. Enter Raw REPL (Ctrl+A)
+                await boardWriter.write(encoder.encode('\x01')); 
+                await new Promise(r => setTimeout(r, 400)); // Wait for REPL to initialize
+                
+                // 3. Send the file write script
                 const transferScript = `f=open('code.py','w');f.write('''${code}''');f.close()\n`;
                 await boardWriter.write(encoder.encode(transferScript));
                 
+                // 4. EXECUTE the write script in Raw REPL (Ctrl+D)
                 await boardWriter.write(encoder.encode('\x04')); 
-                await new Promise(r => setTimeout(r, 600)); 
+                await new Promise(r => setTimeout(r, 600)); // Give flash memory time to save
                 
+                // 5. EXIT Raw REPL (Ctrl+B)
                 await boardWriter.write(encoder.encode('\x02')); 
                 await new Promise(r => setTimeout(r, 200));
 
+                // 6. SOFT REBOOT to run the newly saved code.py (Ctrl+D)
                 await boardWriter.write(encoder.encode('\x04')); 
                 
                 document.getElementById('statusLabel').innerText = "Status: Success! Code should be running.";
