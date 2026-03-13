@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaBoard Blockly IDE v1.8</title>
+    <title>IdeaBoard Blockly IDE v1.9</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -26,7 +26,7 @@
 <body>
 
     <div id="app-container">
-        <h2>IdeaBoard Scratch Editor v1.8</h2>
+        <h2>IdeaBoard Scratch Editor v1.9</h2>
         
         <div class="controls">
             <button onclick="connectSerial()" id="connectBtn">Connect</button>
@@ -122,6 +122,34 @@
             trashcan: true
         });
 
+        // --- NEW: INJECT DEFAULT BLOCKS ---
+        const defaultBlocksXml = `
+        <xml xmlns="https://developers.google.com/blockly/xml">
+          <block type="controls_forever" x="50" y="50">
+            <statement name="DO">
+              <block type="ib_pixel">
+                <field name="COLOUR">255, 0, 0</field>
+                <next>
+                  <block type="time_sleep">
+                    <field name="SECONDS">1</field>
+                    <next>
+                      <block type="ib_pixel">
+                        <field name="COLOUR">0, 0, 0</field>
+                        <next>
+                          <block type="time_sleep">
+                            <field name="SECONDS">1</field>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </statement>
+          </block>
+        </xml>`;
+        Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(defaultBlocksXml), workspace);
+
         workspace.addChangeListener(() => {
             const generatedCode = python.pythonGenerator.workspaceToCode(workspace);
             const header = `import board\nfrom ideaboard import IdeaBoard\nfrom time import sleep\n\nib = IdeaBoard()\n\n`;
@@ -131,8 +159,6 @@
         let boardPort = null;
         let boardWriter = null;
 
-        // --- NEW: THE BUFFER DRAIN LOOP ---
-        // This constantly reads from the board so the ESP32 doesn't freeze.
         async function readLoop() {
             while (boardPort.readable) {
                 const reader = boardPort.readable.getReader();
@@ -140,7 +166,6 @@
                     while (true) {
                         const { value, done } = await reader.read();
                         if (done) break;
-                        // We do nothing with 'value'. We just throw it away to keep the line clear!
                     }
                 } catch (error) {
                     console.error("Reader error:", error);
@@ -157,7 +182,6 @@
                 await boardPort.open({ baudRate: 115200 });
                 boardWriter = boardPort.writable.getWriter();
                 
-                // Kick off the background drain loop immediately after connecting
                 readLoop();
                 
                 document.getElementById('runBtn').disabled = false;
@@ -179,7 +203,7 @@
             try {
                 document.getElementById('statusLabel').innerText = "Status: Flashing...";
                 
-                // 1. Interrupt (Ctrl+C). The drain loop will instantly clear the traceback.
+                // 1. Interrupt running code
                 await boardWriter.write(encoder.encode('\x03')); 
                 await new Promise(r => setTimeout(r, 400)); 
 
@@ -187,13 +211,19 @@
                 await boardWriter.write(encoder.encode('\x01')); 
                 await new Promise(r => setTimeout(r, 400)); 
                 
-                // 3. Write File Command
-                const transferScript = `f=open('code.py','w');f.write('''${code}''');f.close()\n`;
-                await boardWriter.write(encoder.encode(transferScript));
+                // --- NEW: CHUNKED FILE TRANSFER ---
+                const transferScript = `f=open('code.py','w')\nf.write('''${code}''')\nf.close()\n`;
+                const payload = encoder.encode(transferScript);
+                
+                // Send the script 64 bytes at a time with a 20ms pause
+                for (let i = 0; i < payload.length; i += 64) {
+                    await boardWriter.write(payload.slice(i, i + 64));
+                    await new Promise(r => setTimeout(r, 20)); 
+                }
                 
                 // 4. Execute Write (Ctrl+D)
                 await boardWriter.write(encoder.encode('\x04')); 
-                await new Promise(r => setTimeout(r, 500)); // Wait for flash to save
+                await new Promise(r => setTimeout(r, 600)); // Wait for flash to save
                 
                 // 5. Exit Raw REPL (Ctrl+B)
                 await boardWriter.write(encoder.encode('\x02')); 
