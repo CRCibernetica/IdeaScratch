@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaScratch v1.22</title>
+    <title>IdeaScratch v1.23</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -60,13 +60,12 @@
         .code-container summary { font-size: 1.1em; font-weight: bold; cursor: pointer; color: #333; outline: none; }
         #codePreview { background: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px; white-space: pre; font-family: 'Consolas', monospace; overflow-x: auto; margin-top: 15px; font-size: 0.9em; }
         
-        /* NEW: Simulator Console Styling */
         #simConsole { background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 8px; height: 120px; overflow-y: auto; font-family: 'Consolas', monospace; margin-top: 15px; white-space: pre-wrap; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); }
     </style>
 </head>
 <body>
 
-    <h2>IdeaScratch v1.22</h2>
+    <h2>IdeaScratch v1.23</h2>
 
     <div id="app-layout">
         
@@ -104,7 +103,7 @@
             </details>
 
             <details class="code-container" open>
-                <summary>Simulator Output Console ▾</summary>
+                <summary>Output Console (Sim & Hardware) ▾</summary>
                 <div id="simConsole"></div>
                 <button onclick="document.getElementById('simConsole').innerText=''" style="margin-top:10px; background:#6c757d; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Clear Console</button>
             </details>
@@ -205,7 +204,6 @@
             return `sleep(${block.getFieldValue('SECONDS') || 1})\n`;
         };
         
-        // FIXED: Inject hardware sleep(0.01) to prevent the ESP32 from freezing the USB port
         python.pythonGenerator.forBlock['controls_forever'] = function(block) {
             const indent = python.pythonGenerator.INDENT || '  ';
             let branch = python.pythonGenerator.statementToCode(block, 'DO');
@@ -241,15 +239,14 @@
 
         javascript.javascriptGenerator.forBlock['ib_event_handler'] = function(block) {
             const branch = javascript.javascriptGenerator.statementToCode(block, 'DO');
-            return `let event = simEventQueue.shift();\nif (event) {\n${branch}}\n`;
+            return `let _sim_event = simEventQueue.shift();\nif (_sim_event) {\n${branch}}\n`;
         };
 
         javascript.javascriptGenerator.forBlock['ib_event_state'] = function(block) {
             const state = block.getFieldValue('STATE');
-            return [`(event === '${state}')`, javascript.Order.ATOMIC];
+            return [`(_sim_event === '${state}')`, javascript.Order.ATOMIC];
         };
 
-        // Override default browser alert() for the text_print block to use our UI Console
         javascript.javascriptGenerator.forBlock['text_print'] = function(block) {
             const msg = javascript.javascriptGenerator.valueToCode(block, 'TEXT', javascript.javascriptGenerator.ORDER_NONE) || "''";
             return `printToConsole(${msg});\n`;
@@ -262,7 +259,7 @@
             trashcan: true
         });
 
-        // Exact mapping to the User's provided Python code
+        // NEW DEFAULT WORKSPACE: Includes BOTH print statements and visual NeoPixel feedback
         const defaultBlocksXml = `
         <xml xmlns="https://developers.google.com/blockly/xml">
           <block type="controls_forever" x="20" y="20">
@@ -275,20 +272,24 @@
                       <block type="ib_event_state"><field name="STATE">released</field></block>
                     </value>
                     <statement name="DO0">
-                      <block type="text_print">
-                        <value name="TEXT">
-                          <shadow type="text"><field name="TEXT">released</field></shadow>
-                        </value>
+                      <block type="ib_pixel"><field name="COLOUR">0, 0, 0</field>
+                        <next>
+                          <block type="text_print">
+                            <value name="TEXT"><shadow type="text"><field name="TEXT">released</field></shadow></value>
+                          </block>
+                        </next>
                       </block>
                     </statement>
                     <value name="IF1">
                       <block type="ib_event_state"><field name="STATE">pressed</field></block>
                     </value>
                     <statement name="DO1">
-                      <block type="text_print">
-                        <value name="TEXT">
-                          <shadow type="text"><field name="TEXT">pressed</field></shadow>
-                        </value>
+                      <block type="ib_pixel"><field name="COLOUR">0, 255, 0</field>
+                        <next>
+                          <block type="text_print">
+                            <value name="TEXT"><shadow type="text"><field name="TEXT">pressed</field></shadow></value>
+                          </block>
+                        </next>
                       </block>
                     </statement>
                   </block>
@@ -317,7 +318,7 @@
             }
         }
 
-        // --- 5. SIMULATOR LOGIC ---
+        // --- 5. SIMULATOR & CONSOLE LOGIC ---
         let simIsRunning = false;
         let simEventQueue = []; 
         
@@ -334,13 +335,18 @@
             }
         }
 
-        function printToConsole(msg) {
+        // Handles both Simulator outputs (with newlines) and Hardware outputs (raw)
+        function printToConsole(msg, isHardware = false) {
             const cons = document.getElementById('simConsole');
-            cons.innerText += msg + '\n';
+            if (isHardware) {
+                // Strip carriage returns to prevent weird formatting, preserve newlines
+                cons.innerText += msg.replace(/\r/g, ''); 
+            } else {
+                cons.innerText += msg + '\n';
+            }
             cons.scrollTop = cons.scrollHeight;
         }
         
-        // Simulates the keypad queue
         const simBtn = document.getElementById('simBootBtn');
         simBtn.addEventListener('mousedown', () => simEventQueue.push('pressed'));
         simBtn.addEventListener('mouseup', () => simEventQueue.push('released'));
@@ -353,7 +359,7 @@
             await simSleep(50);   
             simIsRunning = true;
             simEventQueue = [];
-            document.getElementById('simConsole').innerText = "--- Simulator Started ---\n";
+            printToConsole("--- Simulator Started ---");
             
             const jsCode = javascript.javascriptGenerator.workspaceToCode(workspace);
             const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
@@ -367,14 +373,47 @@
             printToConsole("--- Simulator Stopped ---");
         }
 
-        // --- 6. HARDWARE SERIAL LOGIC ---
+        // --- 6. HARDWARE SERIAL LOGIC (WITH CONSOLE READER) ---
         let boardPort = null;
         let boardWriter = null;
+        let serialReader = null;
         let isConnected = false;
+        let isFlashing = false; // Lock to prevent console spam while uploading
+        let keepReading = false;
+
+        // Background loop that reads Python print() outputs from the hardware
+        async function readLoop() {
+            const decoder = new TextDecoder();
+            while (boardPort && keepReading) {
+                serialReader = boardPort.readable.getReader();
+                try {
+                    while (true) {
+                        const { value, done } = await serialReader.read();
+                        if (done) break;
+                        
+                        // Only print to UI if we aren't actively injecting the code file
+                        if (!isFlashing && value) {
+                            const text = decoder.decode(value);
+                            printToConsole(text, true);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Serial read error:", error);
+                    break;
+                } finally {
+                    if (serialReader) {
+                        serialReader.releaseLock();
+                        serialReader = null;
+                    }
+                }
+            }
+        }
 
         async function toggleConnection() {
             if (isConnected) {
                 try {
+                    keepReading = false;
+                    if (serialReader) { await serialReader.cancel(); }
                     if (boardWriter) { boardWriter.releaseLock(); boardWriter = null; }
                     if (boardPort) { await boardPort.close(); boardPort = null; }
                     isConnected = false;
@@ -383,36 +422,50 @@
                     document.getElementById('runBtn').disabled = true;
                     document.getElementById('stopBtn').disabled = true;
                     document.getElementById('statusLabel').innerText = "Status: Disconnected";
-                } catch (err) { console.error(err); }
+                } catch (err) { console.error("Disconnect error:", err); }
             } else {
                 try {
                     boardPort = await navigator.serial.requestPort();
                     await boardPort.open({ baudRate: 115200 });
                     boardWriter = boardPort.writable.getWriter();
                     isConnected = true;
+                    keepReading = true;
+                    
+                    readLoop(); // Start listening to the board immediately!
+                    
                     document.getElementById('connectBtn').innerText = "Disconnect";
                     document.getElementById('connectBtn').style.background = "#6c757d";
                     document.getElementById('runBtn').disabled = false;
                     document.getElementById('stopBtn').disabled = false;
                     document.getElementById('statusLabel').innerText = "Status: Online";
-                } catch (err) { console.error(err); }
+                    printToConsole("--- Hardware Connected ---\n");
+                } catch (err) { 
+                    console.error(err);
+                    alert("Could not connect. Ensure no other apps (like Thonny) are using the port.");
+                }
             }
         }
 
         async function stopCode() {
             if (!boardWriter || !isConnected) return;
             try {
+                isFlashing = true; // Briefly mute console
                 const encoder = new TextEncoder();
-                await boardWriter.write(encoder.encode('\x03'));
+                await boardWriter.write(encoder.encode('\x03')); // Interrupt
                 document.getElementById('statusLabel').innerText = "Status: Code Stopped";
+                setTimeout(() => { isFlashing = false; }, 200);
             } catch(err) {}
         }
 
         async function runCode() {
             if (!boardWriter) return;
             document.getElementById('statusLabel').innerText = "Status: Flashing...";
-            const rawBlockCode = python.pythonGenerator.workspaceToCode(workspace);
             
+            // Mute the serial reader so we don't see the file transfer
+            isFlashing = true; 
+            printToConsole("--- Flashing Code to Hardware ---\n");
+
+            const rawBlockCode = python.pythonGenerator.workspaceToCode(workspace);
             const pyHeader = `import board\nfrom ideaboard import IdeaBoard\nfrom time import sleep\nimport keypad\n\nib = IdeaBoard()\nkeys = keypad.Keys((board.IO0,), value_when_pressed=False, pull=True)\n\n`;
             const code = pyHeader + rawBlockCode;
             
@@ -429,10 +482,14 @@
                 await boardWriter.write(encoder.encode('\x02')); 
                 await new Promise(r => setTimeout(r, 200));
                 await boardWriter.write(encoder.encode('\x04')); 
+                
                 document.getElementById('statusLabel').innerText = "Status: Success! Code is running.";
             } catch (err) {
                 console.error("Flash failed", err);
                 document.getElementById('statusLabel').innerText = "Status: Error flashing.";
+            } finally {
+                // Unmute the serial reader so we can see the print outputs!
+                setTimeout(() => { isFlashing = false; }, 300); 
             }
         }
     </script>
