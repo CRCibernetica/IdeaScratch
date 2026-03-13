@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaBoard Blockly IDE v1.13</title>
+    <title>IdeaBoard Blockly IDE v1.14</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -10,46 +10,89 @@
 
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f4f4f9; height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; }
-        h2 { margin-top: 0; }
+        h2 { margin-top: 0; color: #333; }
         
-        #app-layout { display: flex; gap: 20px; flex: 1; min-height: 0; }
+        #app-layout { display: flex; gap: 20px; flex: 1; min-height: 0; align-items: flex-start; }
         
-        /* Left Panel: Simulator */
-        .sim-panel { flex: 0 0 320px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; }
-        .sim-controls { width: 100%; display: flex; gap: 10px; margin-bottom: 20px; }
-        .sim-btn { flex: 1; padding: 10px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; color: white; background: #6f42c1; }
+        /* --- Left Panel: Collapsible Simulator --- */
+        .sim-wrapper { 
+            background: white; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            /* Allows it to shrink when closed */
+            flex: 0 0 auto; 
+        }
+        
+        .sim-wrapper summary { 
+            font-size: 1.2em; 
+            font-weight: bold; 
+            padding: 15px 20px; 
+            cursor: pointer; 
+            outline: none; 
+            user-select: none;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .sim-wrapper summary:hover { color: #6f42c1; }
+        
+        .sim-panel { 
+            padding: 20px; 
+            width: 300px; /* Fixed width for the panel */
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        .sim-controls { width: 100%; display: flex; gap: 10px; margin-bottom: 25px; }
+        .sim-btn { flex: 1; padding: 10px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; color: white; background: #6f42c1; transition: 0.2s;}
         .sim-btn:hover { background: #5a32a3; }
         #stopSimBtn { background: #dc3545; }
+        #stopSimBtn:hover { background: #c82333; }
         
-        .board-container { position: relative; width: 100%; max-width: 280px; aspect-ratio: 2/3; margin: 0 auto; }
-        .board-img { width: 100%; height: auto; display: block; }
+        /* The Board Container (Fixed size to prevent scaling issues) */
+        .board-container { 
+            position: relative; 
+            width: 250px; /* Force the board to be a good size */
+            height: auto; 
+            margin: 0 auto; 
+            /* Add a subtle drop shadow to the board itself */
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2));
+        }
+        .board-img { width: 100%; display: block; }
         
         /* The Virtual NeoPixel */
         #sim-pixel {
             position: absolute;
-            /* Adjust these percentages if the pixel doesn't align perfectly with your SVG */
-            top: 42%; 
-            left: 31%; 
-            width: 24px; 
-            height: 24px;
-            margin-top: -12px; /* Center adjustment */
-            margin-left: -12px; /* Center adjustment */
+            /* Recalibrated alignment coordinates */
+            top: 40.5%; 
+            left: 36.5%; 
+            
+            width: 20px; /* Slightly smaller for a tighter fit */
+            height: 20px;
+            /* Transform translate keeps it perfectly centered on the coordinates */
+            transform: translate(-50%, -50%); 
+            
             border-radius: 50%;
             background-color: rgba(0, 0, 0, 0.5);
-            transition: all 0.2s ease;
+            transition: all 0.15s ease-in-out;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            z-index: 10;
         }
 
-        /* Right Panel: IDE */
-        .ide-panel { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 0; }
+        /* --- Right Panel: IDE --- */
+        .ide-panel { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 0; height: 100%; }
         
         .hardware-controls { display: flex; gap: 10px; align-items: center; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #28a745;}
         button.hw-btn { padding: 10px 20px; border-radius: 5px; border: none; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s; }
         button.hw-btn:disabled { background: #ccc !important; cursor: not-allowed; }
         
         #connectBtn { background: #007bff; }
+        #connectBtn:hover { background: #0056b3; }
         #runBtn { background: #28a745; }
+        #runBtn:hover { background: #218838; }
         #stopBtn { background: #dc3545; }
+        #stopBtn:hover { background: #c82333; }
         .status { font-size: 0.9em; color: #555; font-weight: 500; margin-left: auto;}
         
         #blocklyDiv { flex: 1; border: 1px solid #ddd; border-radius: 8px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -61,22 +104,24 @@
 </head>
 <body>
 
-    <h2>IdeaBoard IDE + Simulator v1.13</h2>
+    <h2>IdeaBoard IDE + Simulator v1.14</h2>
 
     <div id="app-layout">
         
-        <div class="sim-panel">
-            <h3>Simulator</h3>
-            <div class="sim-controls">
-                <button class="sim-btn" onclick="runSimulator()">▶ Play Sim</button>
-                <button class="sim-btn" id="stopSimBtn" onclick="stopSimulator()">⬛ Stop</button>
+        <details class="sim-wrapper" open>
+            <summary>▶ Simulator Panel</summary>
+            <div class="sim-panel">
+                <div class="sim-controls">
+                    <button class="sim-btn" onclick="runSimulator()">▶ Play Sim</button>
+                    <button class="sim-btn" id="stopSimBtn" onclick="stopSimulator()">⬛ Stop</button>
+                </div>
+                
+                <div class="board-container">
+                    <img src="ideaboard.svg" alt="IdeaBoard" class="board-img">
+                    <div id="sim-pixel"></div>
+                </div>
             </div>
-            
-            <div class="board-container">
-                <img src="ideaboard.svg" alt="IdeaBoard" class="board-img">
-                <div id="sim-pixel"></div>
-            </div>
-        </div>
+        </details>
 
         <div class="ide-panel">
             <div class="hardware-controls">
@@ -107,7 +152,6 @@
     </xml>
 
     <script>
-        // --- 1. BLOCK DEFINITIONS ---
         Blockly.common.defineBlocksWithJsonArray([
             {
                 "type": "ib_pixel",
@@ -156,7 +200,6 @@
             }
         ]);
 
-        // --- 2. PYTHON GENERATORS (Hardware) ---
         python.pythonGenerator.forBlock['ib_pixel'] = function(block) {
             const rgb = block.getFieldValue('COLOUR'); 
             return `ib.pixel = (${rgb})\n`;
@@ -170,24 +213,19 @@
             return `while True:\n${branch || '    pass\n'}`;
         };
 
-        // --- 3. JAVASCRIPT GENERATORS (Simulator) ---
-        // We instruct Blockly to generate Javascript that interacts with our HTML
         javascript.javascriptGenerator.forBlock['ib_pixel'] = function(block) {
             const rgb = block.getFieldValue('COLOUR'); 
             return `setPixelColor('rgb(${rgb})');\n`;
         };
         javascript.javascriptGenerator.forBlock['time_sleep'] = function(block) {
             const seconds = block.getFieldValue('SECONDS') || 1;
-            // The simulator uses async/await to emulate hardware delays without freezing the browser
             return `await simSleep(${seconds * 1000});\n`;
         };
         javascript.javascriptGenerator.forBlock['controls_forever'] = function(block) {
             const branch = javascript.javascriptGenerator.statementToCode(block, 'DO');
-            // We check simIsRunning so the loop breaks if the user clicks "Stop"
             return `while (simIsRunning) {\n${branch}\n  await simSleep(10);\n}\n`;
         };
 
-        // --- 4. WORKSPACE INITIALIZATION ---
         const workspace = Blockly.inject('blocklyDiv', {
             toolbox: document.getElementById('toolbox'),
             grid: {spacing: 20, length: 3, colour: '#ccc', snap: true},
@@ -202,7 +240,7 @@
                 <field name="COLOUR">255, 0, 0</field>
                 <next>
                   <block type="time_sleep"><field name="SECONDS">1</field><next>
-                  <block type="ib_pixel"><field name="COLOUR">0, 0, 0</field><next>
+                  <block type="ib_pixel"><field name="COLOUR">0, 0, 255</field><next>
                   <block type="time_sleep"><field name="SECONDS">1</field></block>
                   </next></block></next></block>
                 </next>
@@ -218,15 +256,12 @@
             document.getElementById('codePreview').innerText = header + generatedCode;
         });
 
-        // --- 5. SIMULATOR LOGIC ---
         let simIsRunning = false;
         
-        // Helper to delay execution (emulates time.sleep)
         function simSleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        // Helper to change the HTML element
         function setPixelColor(rgbString) {
             const pixel = document.getElementById('sim-pixel');
             if (rgbString === 'rgb(0, 0, 0)') {
@@ -234,25 +269,21 @@
                 pixel.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.5)';
             } else {
                 pixel.style.backgroundColor = rgbString;
-                // Add a glowing effect
                 pixel.style.boxShadow = `0 0 15px 5px ${rgbString}, inset 0 0 5px white`;
             }
         }
 
         async function runSimulator() {
-            simIsRunning = false; // Kill any running instance
-            await simSleep(50);   // Give it a moment to stop
+            simIsRunning = false; 
+            await simSleep(50);   
             simIsRunning = true;
             
-            // Get the JavaScript representation of the blocks
             const jsCode = javascript.javascriptGenerator.workspaceToCode(workspace);
-            
-            // We dynamically create an asynchronous function to run the generated code
             const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
             const executeSim = new AsyncFunction(jsCode);
             
             try {
-                await executeSim(); // Run the user's code in the browser!
+                await executeSim(); 
             } catch (err) {
                 console.error("Simulator error:", err);
             }
@@ -260,11 +291,9 @@
 
         function stopSimulator() {
             simIsRunning = false;
-            setPixelColor('rgb(0, 0, 0)'); // Turn the virtual pixel off
+            setPixelColor('rgb(0, 0, 0)'); 
         }
 
-
-        // --- 6. HARDWARE SERIAL LOGIC (Unchanged from v1.12) ---
         let boardPort = null;
         let boardWriter = null;
         let isConnected = false;
