@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaScratch v1.26</title>
+    <title>IdeaScratch v1.27</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -28,19 +28,18 @@
         #stopSimBtn:hover { background: #c82333; }
         
         .board-container { position: relative; display: inline-block; margin: 10px auto 0; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2)); }
-        .board-img { width: 300px; height: auto; display: block; user-select: none; -webkit-user-drag: none; }
+        .board-img { width: 300px; height: auto; display: block; user-select: none; -webkit-user-drag: none;}
         
-        /* The Virtual NeoPixel */
         #sim-pixel {
             position: absolute; top: 52.5%; left: 49.7%; width: 22px; height: 22px; transform: translate(-50%, -50%); 
             border-radius: 50%; background-color: rgba(0, 0, 0, 0.5); transition: all 0.1s ease-in-out; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); z-index: 10;
         }
 
-        /* NEW: The Smart Hitbox for the BOOT Button */
+        /* UPDATED: Repositioned Hitbox with visible border for alignment */
         #sim-boot-hitbox {
             position: absolute;
-            /* Adjust these percentages if it doesn't align perfectly with your drawing */
-            top: 7.5%; 
+            /* Shifted down from 7.5% to 27% */
+            top: 27%; 
             left: 88.5%; 
             
             width: 24px; 
@@ -49,11 +48,13 @@
             border-radius: 4px;
             cursor: pointer;
             z-index: 20;
-            background-color: rgba(255, 255, 255, 0); /* Invisible by default */
+            background-color: rgba(255, 255, 255, 0); 
+            /* Added a faint border so you can see exactly where it is */
+            border: 1px dashed rgba(0, 0, 0, 0.4); 
             transition: background-color 0.1s;
         }
-        #sim-boot-hitbox:hover { background-color: rgba(255, 255, 255, 0.3); /* Illuminates on hover */ }
-        #sim-boot-hitbox:active { background-color: rgba(0, 0, 0, 0.4); /* Darkens when clicked */ }
+        #sim-boot-hitbox:hover { background-color: rgba(255, 255, 255, 0.4); }
+        #sim-boot-hitbox:active { background-color: rgba(0, 0, 0, 0.4); }
 
         .ide-panel { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 0; height: 100%; }
         .hardware-controls { display: flex; gap: 10px; align-items: center; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #28a745;}
@@ -83,7 +84,7 @@
 </head>
 <body>
 
-    <h2>IdeaScratch v1.26</h2>
+    <h2>IdeaScratch v1.27</h2>
 
     <div id="app-layout">
         
@@ -93,7 +94,6 @@
                     <button class="sim-btn" onclick="runSimulator()">▶ Play Sim</button>
                     <button class="sim-btn" id="stopSimBtn" onclick="stopSimulator()">⬛ Stop</button>
                 </div>
-                
                 <div class="board-container">
                     <img src="ideaboard.svg" alt="IdeaBoard" class="board-img">
                     <div id="sim-pixel"></div>
@@ -181,7 +181,7 @@
                 "type": "controls_forever",
                 "message0": "Forever %1 %2",
                 "args0": [{"type": "input_dummy"}, {"type": "input_statement", "name": "DO"}],
-                "previousStatement": null,
+                "previousStatement": null, 
                 "colour": 120
             },
             {
@@ -387,16 +387,14 @@
         // --- BIND HITBOX EVENTS ---
         const bootHitbox = document.getElementById('sim-boot-hitbox');
         
-        // Desktop Mouse
         bootHitbox.addEventListener('mousedown', () => simEventQueue.push('pressed'));
         bootHitbox.addEventListener('mouseup', () => simEventQueue.push('released'));
         bootHitbox.addEventListener('mouseleave', (e) => {
             if (e.buttons === 1) simEventQueue.push('released');
         });
         
-        // Mobile/Tablet Touch
         bootHitbox.addEventListener('touchstart', (e) => {
-            e.preventDefault(); // Prevents double-firing with mouse events on some screens
+            e.preventDefault(); 
             simEventQueue.push('pressed');
         });
         bootHitbox.addEventListener('touchend', (e) => {
