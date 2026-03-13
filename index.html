@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaScratch v1.19</title>
+    <title>IdeaScratch v1.20</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -24,48 +24,29 @@
             overflow: hidden; 
         }
         
-        .sim-sidebar.collapsed {
-            width: 0px;
-            opacity: 0;
-        }
+        .sim-sidebar.collapsed { width: 0px; opacity: 0; }
 
-        .sim-inner {
-            width: 360px; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
+        .sim-inner { width: 360px; padding: 20px; display: flex; flex-direction: column; align-items: center; }
 
-        .sim-controls { width: 100%; display: flex; gap: 10px; margin-bottom: 25px; }
+        .sim-controls { width: 100%; display: flex; gap: 10px; margin-bottom: 15px; }
         .sim-btn { flex: 1; padding: 10px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; color: white; background: #6f42c1; transition: 0.2s;}
         .sim-btn:hover { background: #5a32a3; }
         #stopSimBtn { background: #dc3545; }
         #stopSimBtn:hover { background: #c82333; }
         
-        .board-container { 
-            position: relative; 
-            display: inline-block; 
-            margin: 0 auto; 
-            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2));
-        }
+        /* NEW: Simulator Boot Button styling */
+        #simBootBtn { background: #e0a800; user-select: none; }
+        #simBootBtn:hover { background: #c69500; }
+        #simBootBtn:active { background: #b38600; transform: scale(0.98); }
         
-        .board-img { 
-            width: 300px; 
-            height: auto; 
-            display: block; 
-        }
+        .board-container { position: relative; display: inline-block; margin: 10px auto 0; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2)); }
+        .board-img { width: 300px; height: auto; display: block; }
         
-        /* The Virtual NeoPixel - Mathematically Aligned! */
         #sim-pixel {
             position: absolute;
-            top: 52.5%; 
-            left: 49.7%; 
-            
-            width: 22px; 
-            height: 22px;
+            top: 52.5%; left: 49.7%; 
+            width: 22px; height: 22px;
             transform: translate(-50%, -50%); 
-            
             border-radius: 50%;
             background-color: rgba(0, 0, 0, 0.5);
             transition: all 0.15s ease-in-out;
@@ -100,7 +81,7 @@
 </head>
 <body>
 
-    <h2>IdeaScratch v1.19</h2>
+    <h2>IdeaScratch v1.20</h2>
 
     <div id="app-layout">
         
@@ -109,6 +90,9 @@
                 <div class="sim-controls">
                     <button class="sim-btn" onclick="runSimulator()">▶ Play Sim</button>
                     <button class="sim-btn" id="stopSimBtn" onclick="stopSimulator()">⬛ Stop</button>
+                </div>
+                <div class="sim-controls">
+                    <button class="sim-btn" id="simBootBtn">🔘 Hold BOOT Button</button>
                 </div>
                 
                 <div class="board-container">
@@ -141,14 +125,19 @@
     <xml id="toolbox" style="display: none">
         <category name="IdeaBoard" colour="230">
             <block type="ib_pixel"></block>
+            <block type="ib_button_check"></block>
         </category>
         <category name="Control" colour="120">
             <block type="controls_forever"></block>
             <block type="time_sleep"></block>
         </category>
+        <category name="Logic" colour="210">
+            <block type="controls_if"></block>
+        </category>
     </xml>
 
     <script>
+        // --- 1. BLOCK DEFINITIONS ---
         Blockly.common.defineBlocksWithJsonArray([
             {
                 "type": "ib_pixel",
@@ -158,13 +147,9 @@
                         "type": "field_dropdown",
                         "name": "COLOUR",
                         "options": [
-                            ["🔴 Red", "255, 0, 0"],
-                            ["🟢 Green", "0, 255, 0"],
-                            ["🔵 Blue", "0, 0, 255"],
-                            ["🟡 Yellow", "255, 255, 0"],
-                            ["🟣 Purple", "128, 0, 128"],
-                            ["⚪ White", "255, 255, 255"],
-                            ["⚫ Off (Black)", "0, 0, 0"]
+                            ["🔴 Red", "255, 0, 0"], ["🟢 Green", "0, 255, 0"], ["🔵 Blue", "0, 0, 255"],
+                            ["🟡 Yellow", "255, 255, 0"], ["🟣 Purple", "128, 0, 128"],
+                            ["⚪ White", "255, 255, 255"], ["⚫ Off (Black)", "0, 0, 0"]
                         ]
                     }
                 ],
@@ -175,13 +160,7 @@
             {
                 "type": "time_sleep",
                 "message0": "Wait %1 seconds",
-                "args0": [
-                    {
-                        "type": "field_number",
-                        "name": "SECONDS",
-                        "value": 1
-                    }
-                ],
+                "args0": [{"type": "field_number", "name": "SECONDS", "value": 1}],
                 "previousStatement": null,
                 "nextStatement": null,
                 "colour": 160
@@ -189,58 +168,98 @@
             {
                 "type": "controls_forever",
                 "message0": "Forever %1 %2",
-                "args0": [
-                    {"type": "input_dummy"},
-                    {"type": "input_statement", "name": "DO"}
-                ],
+                "args0": [{"type": "input_dummy"}, {"type": "input_statement", "name": "DO"}],
                 "colour": 120
+            },
+            // NEW: Boolean block for checking button event state
+            {
+                "type": "ib_button_check",
+                "message0": "Boot button %1",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "EVENT",
+                        "options": [
+                            ["pressed", "pressed"],
+                            ["released", "released"]
+                        ]
+                    }
+                ],
+                "output": "Boolean",
+                "colour": 230
             }
         ]);
 
+        // --- 2. PYTHON GENERATORS ---
         python.pythonGenerator.forBlock['ib_pixel'] = function(block) {
-            const rgb = block.getFieldValue('COLOUR'); 
-            return `ib.pixel = (${rgb})\n`;
+            return `ib.pixel = (${block.getFieldValue('COLOUR')})\n`;
         };
+        
         python.pythonGenerator.forBlock['time_sleep'] = function(block) {
-            const seconds = block.getFieldValue('SECONDS') || 1;
-            return `sleep(${seconds})\n`;
+            return `sleep(${block.getFieldValue('SECONDS') || 1})\n`;
         };
+        
+        // MODIFIED: Inject the event fetcher silently at the top of the forever loop
         python.pythonGenerator.forBlock['controls_forever'] = function(block) {
-            const branch = python.pythonGenerator.statementToCode(block, 'DO');
-            return `while True:\n${branch || '    pass\n'}`;
+            const branch = python.pythonGenerator.statementToCode(block, 'DO') || '    pass\n';
+            return `while True:\n    _btn_event = keys.events.get()\n${branch}`;
         };
 
+        // NEW: Safe Python boolean evaluation for the event
+        python.pythonGenerator.forBlock['ib_button_check'] = function(block) {
+            const eventType = block.getFieldValue('EVENT');
+            const code = `(_btn_event and _btn_event.${eventType})`;
+            return [code, python.Order.ATOMIC];
+        };
+
+        // --- 3. JAVASCRIPT SIMULATOR GENERATORS ---
         javascript.javascriptGenerator.forBlock['ib_pixel'] = function(block) {
-            const rgb = block.getFieldValue('COLOUR'); 
-            return `setPixelColor('rgb(${rgb})');\n`;
+            return `setPixelColor('rgb(${block.getFieldValue('COLOUR')})');\n`;
         };
+        
         javascript.javascriptGenerator.forBlock['time_sleep'] = function(block) {
-            const seconds = block.getFieldValue('SECONDS') || 1;
-            return `await simSleep(${seconds * 1000});\n`;
+            return `await simSleep(${(block.getFieldValue('SECONDS') || 1) * 1000});\n`;
         };
+        
+        // MODIFIED: Fetch from the simulated event queue
         javascript.javascriptGenerator.forBlock['controls_forever'] = function(block) {
             const branch = javascript.javascriptGenerator.statementToCode(block, 'DO');
-            return `while (simIsRunning) {\n${branch}\n  await simSleep(10);\n}\n`;
+            return `while (simIsRunning) {\n  _sim_event = simEventQueue.shift();\n${branch}\n  await simSleep(10);\n}\n`;
         };
 
+        // NEW: Evaluate simulated event
+        javascript.javascriptGenerator.forBlock['ib_button_check'] = function(block) {
+            const eventType = block.getFieldValue('EVENT');
+            const code = `(_sim_event === '${eventType}')`;
+            return [code, javascript.Order.ATOMIC];
+        };
+
+        // --- 4. WORKSPACE INITIALIZATION ---
         const workspace = Blockly.inject('blocklyDiv', {
             toolbox: document.getElementById('toolbox'),
             grid: {spacing: 20, length: 3, colour: '#ccc', snap: true},
             trashcan: true
         });
 
+        // Pre-loaded layout showing off the new if/else logic
         const defaultBlocksXml = `
         <xml xmlns="https://developers.google.com/blockly/xml">
           <block type="controls_forever" x="20" y="20">
             <statement name="DO">
-              <block type="ib_pixel">
-                <field name="COLOUR">255, 0, 0</field>
-                <next>
-                  <block type="time_sleep"><field name="SECONDS">1</field><next>
-                  <block type="ib_pixel"><field name="COLOUR">0, 0, 255</field><next>
-                  <block type="time_sleep"><field name="SECONDS">1</field></block>
-                  </next></block></next></block>
-                </next>
+              <block type="controls_if">
+                <mutation elseif="1"></mutation>
+                <value name="IF0">
+                  <block type="ib_button_check"><field name="EVENT">pressed</field></block>
+                </value>
+                <statement name="DO0">
+                  <block type="ib_pixel"><field name="COLOUR">255, 0, 0</field></block>
+                </statement>
+                <value name="IF1">
+                  <block type="ib_button_check"><field name="EVENT">released</field></block>
+                </value>
+                <statement name="DO1">
+                  <block type="ib_pixel"><field name="COLOUR">0, 0, 0</field></block>
+                </statement>
               </block>
             </statement>
           </block>
@@ -249,10 +268,14 @@
 
         workspace.addChangeListener(() => {
             const generatedCode = python.pythonGenerator.workspaceToCode(workspace);
-            const header = `import board\nfrom ideaboard import IdeaBoard\nfrom time import sleep\n\nib = IdeaBoard()\n\n`;
+            
+            // UPDATED PYTHON HEADER: Now includes keypad setup
+            const header = `import board\nimport keypad\nfrom ideaboard import IdeaBoard\nfrom time import sleep\n\nib = IdeaBoard()\nkeys = keypad.Keys((board.IO0,), value_when_pressed=False, pull=True)\n\n`;
+            
             document.getElementById('codePreview').innerText = header + generatedCode;
         });
 
+        // --- 5. UI CONTROLS ---
         function toggleSidebar() {
             const sidebar = document.getElementById('simSidebar');
             const btn = document.getElementById('toggleSidebarBtn');
@@ -265,7 +288,10 @@
             }
         }
 
+        // --- 6. SIMULATOR ENGINE ---
         let simIsRunning = false;
+        let simEventQueue = []; // Our virtual keypad queue!
+        
         function simSleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
         function setPixelColor(rgbString) {
@@ -278,11 +304,21 @@
                 pixel.style.boxShadow = `0 0 15px 5px ${rgbString}, inset 0 0 5px white`;
             }
         }
+        
+        // Bind the HTML simulator button to our event queue
+        const simBtn = document.getElementById('simBootBtn');
+        simBtn.addEventListener('mousedown', () => simEventQueue.push('pressed'));
+        simBtn.addEventListener('mouseup', () => simEventQueue.push('released'));
+        simBtn.addEventListener('mouseleave', (e) => {
+            if (e.buttons === 1) simEventQueue.push('released'); // Fixes getting stuck if mouse drags off
+        });
 
         async function runSimulator() {
             simIsRunning = false; 
             await simSleep(50);   
             simIsRunning = true;
+            simEventQueue = []; // Clear queue on start
+            
             const jsCode = javascript.javascriptGenerator.workspaceToCode(workspace);
             const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
             const executeSim = new AsyncFunction(jsCode);
@@ -294,6 +330,7 @@
             setPixelColor('rgb(0, 0, 0)'); 
         }
 
+        // --- 7. HARDWARE SERIAL LOGIC ---
         let boardPort = null;
         let boardWriter = null;
         let isConnected = false;
@@ -338,8 +375,11 @@
             if (!boardWriter) return;
             document.getElementById('statusLabel').innerText = "Status: Flashing...";
             const rawBlockCode = python.pythonGenerator.workspaceToCode(workspace);
-            const pyHeader = `import board\nfrom ideaboard import IdeaBoard\nfrom time import sleep\n\nib = IdeaBoard()\n\n`;
+            
+            // Add keypad imports to the flashed script
+            const pyHeader = `import board\nimport keypad\nfrom ideaboard import IdeaBoard\nfrom time import sleep\n\nib = IdeaBoard()\nkeys = keypad.Keys((board.IO0,), value_when_pressed=False, pull=True)\n\n`;
             const code = pyHeader + rawBlockCode;
+            
             const encoder = new TextEncoder();
             try {
                 await boardWriter.write(encoder.encode('\x03\x03')); 
