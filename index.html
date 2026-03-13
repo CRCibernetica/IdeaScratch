@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaBoard Blockly IDE v1.10</title>
+    <title>IdeaBoard Blockly IDE v1.11</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -26,7 +26,7 @@
 <body>
 
     <div id="app-container">
-        <h2>IdeaBoard Scratch Editor v1.10</h2>
+        <h2>IdeaBoard Scratch Editor v1.11</h2>
         
         <div class="controls">
             <button onclick="connectSerial()" id="connectBtn">Connect</button>
@@ -53,6 +53,7 @@
     </xml>
 
     <script>
+        // --- BLOCK DEFINITIONS ---
         Blockly.common.defineBlocksWithJsonArray([
             {
                 "type": "ib_pixel",
@@ -101,6 +102,7 @@
             }
         ]);
 
+        // --- PYTHON GENERATORS ---
         python.pythonGenerator.forBlock['ib_pixel'] = function(block) {
             const rgb = block.getFieldValue('COLOUR'); 
             return `ib.pixel = (${rgb})\n`;
@@ -116,13 +118,14 @@
             return `while True:\n${branch || '    pass\n'}`;
         };
 
+        // --- WORKSPACE INITIALIZATION ---
         const workspace = Blockly.inject('blocklyDiv', {
             toolbox: document.getElementById('toolbox'),
             grid: {spacing: 20, length: 3, colour: '#ccc', snap: true},
             trashcan: true
         });
 
-        // Pre-load the Blink Code
+        // Pre-load the Blink blocks for easy testing
         const defaultBlocksXml = `
         <xml xmlns="https://developers.google.com/blockly/xml">
           <block type="controls_forever" x="50" y="50">
@@ -150,16 +153,17 @@
         </xml>`;
         Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(defaultBlocksXml), workspace);
 
+        // Update the visual preview for the user
         workspace.addChangeListener(() => {
             const generatedCode = python.pythonGenerator.workspaceToCode(workspace);
             const header = `import board\nfrom ideaboard import IdeaBoard\nfrom time import sleep\n\nib = IdeaBoard()\n\n`;
             document.getElementById('codePreview').innerText = header + generatedCode;
         });
 
+        // --- SERIAL COMMUNICATION ---
         let boardPort = null;
         let boardWriter = null;
 
-        // Reverted: Removed the background readLoop() completely
         async function connectSerial() {
             try {
                 boardPort = await navigator.serial.requestPort();
@@ -172,20 +176,24 @@
                 document.getElementById('statusLabel').innerText = "Status: Online";
             } catch (err) {
                 console.error("Connection failed", err);
-                alert("Could not connect. Ensure no other apps (like Thonny) are using the port.");
+                alert("Could not connect. Ensure no other apps are using the port.");
             }
         }
 
-        // Reverted: Back to the exact v1.5 sequence (no chunking, double Ctrl+C)
         async function runCode() {
             if (!boardWriter) return;
 
-            const code = document.getElementById('codePreview').innerText;
+            document.getElementById('statusLabel').innerText = "Status: Flashing...";
+
+            // THE FIX: Pull the code directly from Blockly variables, not the DOM!
+            const rawBlockCode = python.pythonGenerator.workspaceToCode(workspace);
+            const pyHeader = `import board\nfrom ideaboard import IdeaBoard\nfrom time import sleep\n\nib = IdeaBoard()\n\n`;
+            const code = pyHeader + rawBlockCode;
+            
             const encoder = new TextEncoder();
 
             try {
-                document.getElementById('statusLabel').innerText = "Status: Flashing...";
-                
+                // The verified, working v1.5 handshake
                 await boardWriter.write(encoder.encode('\x03\x03')); 
                 await new Promise(r => setTimeout(r, 300));
 
@@ -203,7 +211,7 @@
 
                 await boardWriter.write(encoder.encode('\x04')); 
                 
-                document.getElementById('statusLabel').innerText = "Status: Success! Code should be running.";
+                document.getElementById('statusLabel').innerText = "Status: Success! Code is running.";
             } catch (err) {
                 console.error("Flash failed", err);
                 document.getElementById('statusLabel').innerText = "Status: Error flashing.";
