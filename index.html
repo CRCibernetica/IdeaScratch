@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaBoard Blockly IDE v1.11</title>
+    <title>IdeaBoard Blockly IDE v1.12</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -12,9 +12,18 @@
         #app-container { display: flex; flex-direction: column; gap: 15px; max-width: 1200px; margin: 0 auto; }
         #blocklyDiv { height: 600px; width: 100%; border: 1px solid #ddd; border-radius: 8px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .controls { display: flex; gap: 10px; align-items: center; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        button { padding: 10px 20px; border-radius: 5px; border: none; background: #007bff; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s; }
-        button:hover { background: #0056b3; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
+        
+        button { padding: 10px 20px; border-radius: 5px; border: none; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        button:disabled { background: #ccc !important; cursor: not-allowed; }
+        
+        /* Button Colors */
+        #connectBtn { background: #007bff; }
+        #connectBtn:hover { background: #0056b3; }
+        #runBtn { background: #28a745; }
+        #runBtn:hover { background: #218838; }
+        #stopBtn { background: #dc3545; }
+        #stopBtn:hover { background: #c82333; }
+        
         .status { font-size: 0.9em; color: #555; font-weight: 500; margin-left: auto;}
         
         .code-container { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -26,11 +35,12 @@
 <body>
 
     <div id="app-container">
-        <h2>IdeaBoard Scratch Editor v1.11</h2>
+        <h2>IdeaBoard Scratch Editor v1.12</h2>
         
         <div class="controls">
-            <button onclick="connectSerial()" id="connectBtn">Connect</button>
+            <button onclick="toggleConnection()" id="connectBtn">Connect</button>
             <button onclick="runCode()" id="runBtn" disabled>Run</button>
+            <button onclick="stopCode()" id="stopBtn" disabled>Stop</button>
             <span id="statusLabel" class="status">Status: Disconnected</span>
         </div>
 
@@ -53,7 +63,6 @@
     </xml>
 
     <script>
-        // --- BLOCK DEFINITIONS ---
         Blockly.common.defineBlocksWithJsonArray([
             {
                 "type": "ib_pixel",
@@ -102,7 +111,6 @@
             }
         ]);
 
-        // --- PYTHON GENERATORS ---
         python.pythonGenerator.forBlock['ib_pixel'] = function(block) {
             const rgb = block.getFieldValue('COLOUR'); 
             return `ib.pixel = (${rgb})\n`;
@@ -118,14 +126,12 @@
             return `while True:\n${branch || '    pass\n'}`;
         };
 
-        // --- WORKSPACE INITIALIZATION ---
         const workspace = Blockly.inject('blocklyDiv', {
             toolbox: document.getElementById('toolbox'),
             grid: {spacing: 20, length: 3, colour: '#ccc', snap: true},
             trashcan: true
         });
 
-        // Pre-load the Blink blocks for easy testing
         const defaultBlocksXml = `
         <xml xmlns="https://developers.google.com/blockly/xml">
           <block type="controls_forever" x="50" y="50">
@@ -153,30 +159,75 @@
         </xml>`;
         Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(defaultBlocksXml), workspace);
 
-        // Update the visual preview for the user
         workspace.addChangeListener(() => {
             const generatedCode = python.pythonGenerator.workspaceToCode(workspace);
             const header = `import board\nfrom ideaboard import IdeaBoard\nfrom time import sleep\n\nib = IdeaBoard()\n\n`;
             document.getElementById('codePreview').innerText = header + generatedCode;
         });
 
-        // --- SERIAL COMMUNICATION ---
+        // --- UPDATED SERIAL STATE MANAGEMENT ---
         let boardPort = null;
         let boardWriter = null;
+        let isConnected = false;
 
-        async function connectSerial() {
+        async function toggleConnection() {
+            if (isConnected) {
+                // DISCONNECT LOGIC
+                try {
+                    // 1. Release the writer lock
+                    if (boardWriter) {
+                        boardWriter.releaseLock();
+                        boardWriter = null;
+                    }
+                    // 2. Close the port completely
+                    if (boardPort) {
+                        await boardPort.close();
+                        boardPort = null;
+                    }
+                    
+                    isConnected = false;
+                    
+                    // Update UI
+                    document.getElementById('connectBtn').innerText = "Connect";
+                    document.getElementById('connectBtn').style.background = "#007bff"; // Back to Blue
+                    document.getElementById('runBtn').disabled = true;
+                    document.getElementById('stopBtn').disabled = true;
+                    document.getElementById('statusLabel').innerText = "Status: Disconnected";
+                } catch (err) {
+                    console.error("Disconnect error:", err);
+                    alert("Error disconnecting. You may need to refresh the page.");
+                }
+            } else {
+                // CONNECT LOGIC
+                try {
+                    boardPort = await navigator.serial.requestPort();
+                    await boardPort.open({ baudRate: 115200 });
+                    boardWriter = boardPort.writable.getWriter();
+                    
+                    isConnected = true;
+                    
+                    // Update UI
+                    document.getElementById('connectBtn').innerText = "Disconnect";
+                    document.getElementById('connectBtn').style.background = "#6c757d"; // Gray for disconnect
+                    document.getElementById('runBtn').disabled = false;
+                    document.getElementById('stopBtn').disabled = false;
+                    document.getElementById('statusLabel').innerText = "Status: Online";
+                } catch (err) {
+                    console.error("Connection failed", err);
+                    alert("Could not connect. Ensure no other apps are using the port.");
+                }
+            }
+        }
+
+        async function stopCode() {
+            if (!boardWriter || !isConnected) return;
             try {
-                boardPort = await navigator.serial.requestPort();
-                await boardPort.open({ baudRate: 115200 });
-                boardWriter = boardPort.writable.getWriter();
-                
-                document.getElementById('runBtn').disabled = false;
-                document.getElementById('connectBtn').innerText = "Connected";
-                document.getElementById('connectBtn').style.background = "#28a745";
-                document.getElementById('statusLabel').innerText = "Status: Online";
-            } catch (err) {
-                console.error("Connection failed", err);
-                alert("Could not connect. Ensure no other apps are using the port.");
+                const encoder = new TextEncoder();
+                // Send a single Ctrl+C to halt running code
+                await boardWriter.write(encoder.encode('\x03'));
+                document.getElementById('statusLabel').innerText = "Status: Code Stopped";
+            } catch(err) {
+                console.error("Stop failed", err);
             }
         }
 
@@ -185,7 +236,6 @@
 
             document.getElementById('statusLabel').innerText = "Status: Flashing...";
 
-            // THE FIX: Pull the code directly from Blockly variables, not the DOM!
             const rawBlockCode = python.pythonGenerator.workspaceToCode(workspace);
             const pyHeader = `import board\nfrom ideaboard import IdeaBoard\nfrom time import sleep\n\nib = IdeaBoard()\n\n`;
             const code = pyHeader + rawBlockCode;
@@ -193,7 +243,6 @@
             const encoder = new TextEncoder();
 
             try {
-                // The verified, working v1.5 handshake
                 await boardWriter.write(encoder.encode('\x03\x03')); 
                 await new Promise(r => setTimeout(r, 300));
 
