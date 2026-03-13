@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaScratch v1.21</title>
+    <title>IdeaScratch v1.22</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -59,11 +59,14 @@
         .code-container { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .code-container summary { font-size: 1.1em; font-weight: bold; cursor: pointer; color: #333; outline: none; }
         #codePreview { background: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px; white-space: pre; font-family: 'Consolas', monospace; overflow-x: auto; margin-top: 15px; font-size: 0.9em; }
+        
+        /* NEW: Simulator Console Styling */
+        #simConsole { background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 8px; height: 120px; overflow-y: auto; font-family: 'Consolas', monospace; margin-top: 15px; white-space: pre-wrap; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); }
     </style>
 </head>
 <body>
 
-    <h2>IdeaScratch v1.21</h2>
+    <h2>IdeaScratch v1.22</h2>
 
     <div id="app-layout">
         
@@ -92,10 +95,18 @@
                 <button class="hw-btn" onclick="stopCode()" id="stopBtn" disabled>Stop</button>
                 <span id="statusLabel" class="status">Status: Disconnected</span>
             </div>
+            
             <div id="blocklyDiv"></div>
+            
             <details class="code-container">
                 <summary>Generated CircuitPython (code.py) ▾</summary>
                 <div id="codePreview"># Code will appear here...</div>
+            </details>
+
+            <details class="code-container" open>
+                <summary>Simulator Output Console ▾</summary>
+                <div id="simConsole"></div>
+                <button onclick="document.getElementById('simConsole').innerText=''" style="margin-top:10px; background:#6c757d; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Clear Console</button>
             </details>
         </div>
     </div>
@@ -114,6 +125,10 @@
         <category name="Control" colour="120">
             <block type="controls_forever"></block>
             <block type="time_sleep"></block>
+        </category>
+        <category name="Text" colour="160">
+            <block type="text_print"></block>
+            <block type="text"></block>
         </category>
     </xml>
 
@@ -152,7 +167,6 @@
                 "args0": [{"type": "input_dummy"}, {"type": "input_statement", "name": "DO"}],
                 "colour": 120
             },
-            // NEW: The exact Event Handler wrapper
             {
                 "type": "ib_event_handler",
                 "message0": "Check Boot button events %1 %2",
@@ -162,10 +176,8 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": 65,
-                "tooltip": "Fetches a button event and runs code if an event occurred."
+                "colour": 65
             },
-            // NEW: The exact Event Boolean
             {
                 "type": "ib_event_state",
                 "message0": "Event is %1",
@@ -193,24 +205,25 @@
             return `sleep(${block.getFieldValue('SECONDS') || 1})\n`;
         };
         
-        // Reverted to clean loop
+        // FIXED: Inject hardware sleep(0.01) to prevent the ESP32 from freezing the USB port
         python.pythonGenerator.forBlock['controls_forever'] = function(block) {
-            const branch = python.pythonGenerator.statementToCode(block, 'DO') || '    pass\n';
-            return `while True:\n${branch}`;
+            const indent = python.pythonGenerator.INDENT || '  ';
+            let branch = python.pythonGenerator.statementToCode(block, 'DO');
+            if (!branch) branch = indent + 'pass\n';
+            return `while True:\n${indent}sleep(0.01)\n${branch}`;
         };
 
-        // NEW: Generates exact Python event check
         python.pythonGenerator.forBlock['ib_event_handler'] = function(block) {
-            const branch = python.pythonGenerator.statementToCode(block, 'DO') || '  pass\n';
+            const indent = python.pythonGenerator.INDENT || '  ';
+            let branch = python.pythonGenerator.statementToCode(block, 'DO');
+            if (!branch) branch = indent + 'pass\n';
             return `event = keys.events.get()\nif event:\n${branch}`;
         };
 
-        // NEW: Generates exact Python boolean
         python.pythonGenerator.forBlock['ib_event_state'] = function(block) {
             const state = block.getFieldValue('STATE');
             return [`event.${state}`, python.Order.ATOMIC];
         };
-
 
         // --- 3. JAVASCRIPT SIMULATOR GENERATORS ---
         javascript.javascriptGenerator.forBlock['ib_pixel'] = function(block) {
@@ -236,6 +249,12 @@
             return [`(event === '${state}')`, javascript.Order.ATOMIC];
         };
 
+        // Override default browser alert() for the text_print block to use our UI Console
+        javascript.javascriptGenerator.forBlock['text_print'] = function(block) {
+            const msg = javascript.javascriptGenerator.valueToCode(block, 'TEXT', javascript.javascriptGenerator.ORDER_NONE) || "''";
+            return `printToConsole(${msg});\n`;
+        };
+
         // --- 4. WORKSPACE INITIALIZATION ---
         const workspace = Blockly.inject('blocklyDiv', {
             toolbox: document.getElementById('toolbox'),
@@ -243,7 +262,7 @@
             trashcan: true
         });
 
-        // Exact structural mapping to your provided Python code
+        // Exact mapping to the User's provided Python code
         const defaultBlocksXml = `
         <xml xmlns="https://developers.google.com/blockly/xml">
           <block type="controls_forever" x="20" y="20">
@@ -256,13 +275,21 @@
                       <block type="ib_event_state"><field name="STATE">released</field></block>
                     </value>
                     <statement name="DO0">
-                      <block type="ib_pixel"><field name="COLOUR">0, 0, 0</field></block>
+                      <block type="text_print">
+                        <value name="TEXT">
+                          <shadow type="text"><field name="TEXT">released</field></shadow>
+                        </value>
+                      </block>
                     </statement>
                     <value name="IF1">
                       <block type="ib_event_state"><field name="STATE">pressed</field></block>
                     </value>
                     <statement name="DO1">
-                      <block type="ib_pixel"><field name="COLOUR">0, 255, 0</field></block>
+                      <block type="text_print">
+                        <value name="TEXT">
+                          <shadow type="text"><field name="TEXT">pressed</field></shadow>
+                        </value>
+                      </block>
                     </statement>
                   </block>
                 </statement>
@@ -306,6 +333,12 @@
                 pixel.style.boxShadow = `0 0 15px 5px ${rgbString}, inset 0 0 5px white`;
             }
         }
+
+        function printToConsole(msg) {
+            const cons = document.getElementById('simConsole');
+            cons.innerText += msg + '\n';
+            cons.scrollTop = cons.scrollHeight;
+        }
         
         // Simulates the keypad queue
         const simBtn = document.getElementById('simBootBtn');
@@ -319,7 +352,8 @@
             simIsRunning = false; 
             await simSleep(50);   
             simIsRunning = true;
-            simEventQueue = []; // Clear queue on start
+            simEventQueue = [];
+            document.getElementById('simConsole').innerText = "--- Simulator Started ---\n";
             
             const jsCode = javascript.javascriptGenerator.workspaceToCode(workspace);
             const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
@@ -330,6 +364,7 @@
         function stopSimulator() {
             simIsRunning = false;
             setPixelColor('rgb(0, 0, 0)'); 
+            printToConsole("--- Simulator Stopped ---");
         }
 
         // --- 6. HARDWARE SERIAL LOGIC ---
@@ -378,7 +413,6 @@
             document.getElementById('statusLabel').innerText = "Status: Flashing...";
             const rawBlockCode = python.pythonGenerator.workspaceToCode(workspace);
             
-            // Header is updated to match your EXACT requirements
             const pyHeader = `import board\nfrom ideaboard import IdeaBoard\nfrom time import sleep\nimport keypad\n\nib = IdeaBoard()\nkeys = keypad.Keys((board.IO0,), value_when_pressed=False, pull=True)\n\n`;
             const code = pyHeader + rawBlockCode;
             
