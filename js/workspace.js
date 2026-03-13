@@ -8,8 +8,6 @@ const workspace = Blockly.inject('blocklyDiv', {
 });
 
 
-const multiselectPlugin = new Multiselect(workspace);
-multiselectPlugin.init({});
 
 workspace.addChangeListener(() => {
     const generatedCode = python.pythonGenerator.workspaceToCode(workspace);
