@@ -8,6 +8,9 @@ const workspace = Blockly.inject('blocklyDiv', {
 });
 
 
+const multiselectPlugin = new Multiselect(workspace);
+multiselectPlugin.init({});
+
 workspace.addChangeListener(() => {
     const generatedCode = python.pythonGenerator.workspaceToCode(workspace);
     const header = `import board\nfrom ideaboard import IdeaBoard\nfrom time import sleep\nimport keypad\n\nib = IdeaBoard()\nkeys = keypad.Keys((board.IO0,), value_when_pressed=False, pull=True)\n\n`;
