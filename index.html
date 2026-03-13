@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IdeaBoard Blockly IDE v1.4</title>
+    <title>IdeaBoard Blockly IDE v1.5</title>
     
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -15,14 +15,19 @@
         button { padding: 10px 20px; border-radius: 5px; border: none; background: #007bff; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s; }
         button:hover { background: #0056b3; }
         button:disabled { background: #ccc; cursor: not-allowed; }
-        #codePreview { background: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px; white-space: pre; font-family: 'Consolas', monospace; overflow-x: auto; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
         .status { font-size: 0.9em; color: #555; font-weight: 500; margin-left: auto;}
+        
+        /* Collapsible Section Styles */
+        .code-container { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .code-container summary { font-size: 1.17em; font-weight: bold; cursor: pointer; user-select: none; color: #333; outline: none; }
+        .code-container summary:hover { color: #007bff; }
+        #codePreview { background: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px; white-space: pre; font-family: 'Consolas', monospace; overflow-x: auto; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); margin-top: 15px; }
     </style>
 </head>
 <body>
 
     <div id="app-container">
-        <h2>IdeaBoard Scratch Editor v1.4</h2>
+        <h2>IdeaBoard Scratch Editor v1.5</h2>
         
         <div class="controls">
             <button onclick="connectSerial()" id="connectBtn">Connect</button>
@@ -32,8 +37,10 @@
 
         <div id="blocklyDiv"></div>
         
-        <h3>Generated CircuitPython (code.py)</h3>
-        <div id="codePreview"># Code will appear here...</div>
+        <details class="code-container" open>
+            <summary>Generated CircuitPython (code.py) ▾</summary>
+            <div id="codePreview"># Code will appear here...</div>
+        </details>
     </div>
 
     <xml id="toolbox" style="display: none">
@@ -150,27 +157,21 @@
             try {
                 document.getElementById('statusLabel').innerText = "Status: Flashing...";
                 
-                // 1. Interrupt running code (Send Ctrl+C twice to be safe)
                 await boardWriter.write(encoder.encode('\x03\x03')); 
                 await new Promise(r => setTimeout(r, 300));
 
-                // 2. Enter Raw REPL (Ctrl+A)
                 await boardWriter.write(encoder.encode('\x01')); 
                 await new Promise(r => setTimeout(r, 300));
                 
-                // 3. Send the file write script
                 const transferScript = `f=open('code.py','w');f.write('''${code}''');f.close()\n`;
                 await boardWriter.write(encoder.encode(transferScript));
                 
-                // 4. EXECUTE the write script in Raw REPL (Ctrl+D)
                 await boardWriter.write(encoder.encode('\x04')); 
-                await new Promise(r => setTimeout(r, 600)); // Give flash memory time to save
+                await new Promise(r => setTimeout(r, 600)); 
                 
-                // 5. EXIT Raw REPL (Ctrl+B)
                 await boardWriter.write(encoder.encode('\x02')); 
                 await new Promise(r => setTimeout(r, 200));
 
-                // 6. SOFT REBOOT to run the newly saved code.py (Ctrl+D)
                 await boardWriter.write(encoder.encode('\x04')); 
                 
                 document.getElementById('statusLabel').innerText = "Status: Success! Code should be running.";
