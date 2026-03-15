@@ -2,7 +2,7 @@
 Blockly.common.defineBlocksWithJsonArray([
     {
         "type": "ib_pixel",
-        "message0": "Set IdeaBoard Pixel to %1",
+        "message0": "Set Pixel to %1",
         "args0": [
             {
                 "type": "field_dropdown",
