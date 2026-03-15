@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CRCibernetica IdeaScratch v1.66</title>
+    <title>CRCibernetica IdeaScratch v1.67</title>
 
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -12,7 +12,7 @@
 </head>
 <body>
 
-    <h2>CRCibernetica IdeaScratch v1.66</h2>
+    <h2>CRCibernetica IdeaScratch v1.67</h2>
 
     <div id="app-layout">
 
@@ -91,8 +91,12 @@
         <category name="IdeaBoard" colour="230">
             <category name="Pixel" colour="230">
                 <block type="ib_pixel"></block>
-                <block type="ib_brightness"></block>
-                <block type="ib_arcoiris"></block>
+                <block type="ib_brightness">
+                    <value name="BRIGHTNESS"><shadow type="math_number"><field name="NUM">0.3</field></shadow></value>
+                </block>
+                <block type="ib_arcoiris">
+                    <value name="VALUE"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                </block>
             </category>
             <category name="Motor" colour="230">
                 <block type="ib_motors">
@@ -102,7 +106,9 @@
             </category>
             <category name="Servo" colour="180">
                 <block type="ib_servo_setup"></block>
-                <block type="ib_servo_angle"></block>
+                <block type="ib_servo_angle">
+                    <value name="ANGLE"><shadow type="math_number"><field name="NUM">90</field></shadow></value>
+                </block>
             </category>
             <category name="Pins" colour="200">
                 <block type="ib_digital_in_setup"></block>
@@ -112,7 +118,9 @@
                 <block type="ib_analog_in_setup"></block>
                 <block type="ib_analog_in_read"></block>
                 <block type="ib_analog_out_setup"></block>
-                <block type="ib_analog_out_write"></block>
+                <block type="ib_analog_out_write">
+                    <value name="VALUE"><shadow type="math_number"><field name="NUM">32768</field></shadow></value>
+                </block>
                 <block type="ib_map_range"></block>
             </category>
         </category>
@@ -132,7 +140,9 @@
         <category name="Control" colour="120">
             <block type="controls_on_start"></block>
             <block type="controls_forever"></block>
-            <block type="time_sleep"></block>
+            <block type="time_sleep">
+                <value name="SECONDS"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+            </block>
             <block type="controls_repeat_ext">
                 <value name="TIMES">
                     <shadow type="math_number"><field name="NUM">10</field></shadow>

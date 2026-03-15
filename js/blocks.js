@@ -28,7 +28,8 @@ Blockly.common.defineBlocksWithJsonArray([
     {
         "type": "time_sleep",
         "message0": "Wait %1 seconds",
-        "args0": [{"type": "field_number", "name": "SECONDS", "value": 1}],
+        "args0": [{"type": "input_value", "name": "SECONDS", "check": "Number"}],
+        "inputsInline": true,
         "previousStatement": null,
         "nextStatement": null,
         "colour": 160
@@ -67,9 +68,8 @@ Blockly.common.defineBlocksWithJsonArray([
     {
         "type": "ib_brightness",
         "message0": "Set Pixel Brightness %1",
-        "args0": [
-            {"type": "field_number", "name": "BRIGHTNESS", "value": 0.3, "min": 0, "max": 1, "precision": 0.01}
-        ],
+        "args0": [{"type": "input_value", "name": "BRIGHTNESS", "check": "Number"}],
+        "inputsInline": true,
         "previousStatement": null,
         "nextStatement": null,
         "colour": 230,
@@ -78,9 +78,8 @@ Blockly.common.defineBlocksWithJsonArray([
     {
         "type": "ib_arcoiris",
         "message0": "Set Pixel Rainbow Color %1",
-        "args0": [
-            {"type": "field_number", "name": "VALUE", "value": 0, "min": 0, "max": 255, "precision": 1}
-        ],
+        "args0": [{"type": "input_value", "name": "VALUE", "check": "Number"}],
+        "inputsInline": true,
         "previousStatement": null,
         "nextStatement": null,
         "colour": 230,
@@ -114,8 +113,9 @@ Blockly.common.defineBlocksWithJsonArray([
         "message0": "Set %1 angle to %2 degrees",
         "args0": [
             {"type": "field_variable", "name": "SERVO_VAR", "variable": "myServo"},
-            {"type": "field_number", "name": "ANGLE", "value": 90, "min": 0, "max": 180, "precision": 1}
+            {"type": "input_value", "name": "ANGLE", "check": "Number"}
         ],
+        "inputsInline": true,
         "previousStatement": null,
         "nextStatement": null,
         "colour": 180,
@@ -255,8 +255,9 @@ Blockly.common.defineBlocksWithJsonArray([
         "message0": "Set %1 to %2",
         "args0": [
             {"type": "field_variable", "name": "PIN_VAR", "variable": "myDAC"},
-            {"type": "field_number", "name": "VALUE", "value": 32768, "min": 0, "max": 65535, "precision": 1}
+            {"type": "input_value", "name": "VALUE", "check": "Number"}
         ],
+        "inputsInline": true,
         "previousStatement": null,
         "nextStatement": null,
         "colour": 40,

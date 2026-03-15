@@ -13,7 +13,8 @@ python.pythonGenerator.forBlock['controls_on_start'] = function(block) {
 };
 
 python.pythonGenerator.forBlock['time_sleep'] = function(block) {
-    return `sleep(${block.getFieldValue('SECONDS') || 1})\n`;
+    const seconds = python.pythonGenerator.valueToCode(block, 'SECONDS', python.Order.NONE) || '1';
+    return `sleep(${seconds})\n`;
 };
 python.pythonGenerator.forBlock['controls_forever'] = function(block) {
     const indent = python.pythonGenerator.INDENT || '  ';
@@ -39,7 +40,7 @@ python.pythonGenerator.forBlock['ib_servo_setup'] = function(block) {
 };
 python.pythonGenerator.forBlock['ib_servo_angle'] = function(block) {
     const varName = python.pythonGenerator.getVariableName(block.getFieldValue('SERVO_VAR'));
-    const angle = block.getFieldValue('ANGLE');
+    const angle = python.pythonGenerator.valueToCode(block, 'ANGLE', python.Order.NONE) || '90';
     return `${varName}.angle = ${angle}\n`;
 };
 
@@ -80,7 +81,7 @@ python.pythonGenerator.forBlock['ib_analog_out_setup'] = function(block) {
 };
 python.pythonGenerator.forBlock['ib_analog_out_write'] = function(block) {
     const varName = python.pythonGenerator.getVariableName(block.getFieldValue('PIN_VAR'));
-    const val = block.getFieldValue('VALUE');
+    const val = python.pythonGenerator.valueToCode(block, 'VALUE', python.Order.NONE) || '0';
     return `${varName}.value = ${val}\n`;
 };
 
@@ -94,10 +95,12 @@ python.pythonGenerator.forBlock['ib_map_range'] = function(block) {
 };
 
 python.pythonGenerator.forBlock['ib_brightness'] = function(block) {
-    return `ib.brightness = ${block.getFieldValue('BRIGHTNESS')}\n`;
+    const val = python.pythonGenerator.valueToCode(block, 'BRIGHTNESS', python.Order.NONE) || '0.3';
+    return `ib.brightness = ${val}\n`;
 };
 python.pythonGenerator.forBlock['ib_arcoiris'] = function(block) {
-    return `ib.arcoiris = ${block.getFieldValue('VALUE')}\n`;
+    const val = python.pythonGenerator.valueToCode(block, 'VALUE', python.Order.NONE) || '0';
+    return `ib.arcoiris = ${val}\n`;
 };
 
 python.pythonGenerator.forBlock['ib_motors'] = function(block) {
@@ -115,7 +118,8 @@ javascript.javascriptGenerator.forBlock['ib_pixel'] = function(block) {
     return `setPixelColor('rgb(${block.getFieldValue('COLOUR')})');\n`;
 };
 javascript.javascriptGenerator.forBlock['time_sleep'] = function(block) {
-    return `await simSleep(${(block.getFieldValue('SECONDS') || 1) * 1000});\n`;
+    const seconds = javascript.javascriptGenerator.valueToCode(block, 'SECONDS', javascript.Order.NONE) || '1';
+    return `await simSleep((${seconds}) * 1000);\n`;
 };
 javascript.javascriptGenerator.forBlock['controls_forever'] = function(block) {
     const branch = javascript.javascriptGenerator.statementToCode(block, 'DO');
@@ -128,8 +132,8 @@ javascript.javascriptGenerator.forBlock['ib_servo_setup'] = function(block) {
 };
 javascript.javascriptGenerator.forBlock['ib_servo_angle'] = function(block) {
     const varName = block.getFieldValue('SERVO_VAR');
-    const angle = block.getFieldValue('ANGLE');
-    return `printToConsole('Servo "${varName}" → ${angle}°', false, 'sys');\n`;
+    const angle = javascript.javascriptGenerator.valueToCode(block, 'ANGLE', javascript.Order.NONE) || '90';
+    return `printToConsole('Servo "${varName}" → ' + (${angle}) + '°', false, 'sys');\n`;
 };
 javascript.javascriptGenerator.forBlock['ib_digital_in_setup'] = function(block) {
     const varName = block.getFieldValue('PIN_VAR');
@@ -166,8 +170,8 @@ javascript.javascriptGenerator.forBlock['ib_analog_out_setup'] = function(block)
 };
 javascript.javascriptGenerator.forBlock['ib_analog_out_write'] = function(block) {
     const varName = block.getFieldValue('PIN_VAR');
-    const val = block.getFieldValue('VALUE');
-    return `printToConsole('Analog Output "${varName}" → ${val}', false, 'sys');\n`;
+    const val = javascript.javascriptGenerator.valueToCode(block, 'VALUE', javascript.Order.NONE) || '0';
+    return `printToConsole('Analog Output "${varName}" → ' + (${val}), false, 'sys');\n`;
 };
 javascript.javascriptGenerator.forBlock['ib_map_range'] = function(block) {
     const value = javascript.javascriptGenerator.valueToCode(block, 'VALUE', javascript.Order.NONE) || '0';
@@ -179,11 +183,11 @@ javascript.javascriptGenerator.forBlock['ib_map_range'] = function(block) {
 };
 
 javascript.javascriptGenerator.forBlock['ib_brightness'] = function(block) {
-    const b = block.getFieldValue('BRIGHTNESS');
+    const b = javascript.javascriptGenerator.valueToCode(block, 'BRIGHTNESS', javascript.Order.NONE) || '0.3';
     return `setPixelBrightness(${b});\n`;
 };
 javascript.javascriptGenerator.forBlock['ib_arcoiris'] = function(block) {
-    const v = block.getFieldValue('VALUE');
+    const v = javascript.javascriptGenerator.valueToCode(block, 'VALUE', javascript.Order.NONE) || '0';
     return `setPixelColor(colorwheel(${v}));\n`;
 };
 javascript.javascriptGenerator.forBlock['ib_motors'] = function(block) {
