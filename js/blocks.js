@@ -114,6 +114,147 @@ Blockly.common.defineBlocksWithJsonArray([
         "tooltip": "Set servo angle: 0 to 180 degrees"
     },
     {
+        "type": "ib_digital_in_setup",
+        "message0": "Set up Digital Input %1 on pin %2 pull %3",
+        "args0": [
+            {"type": "field_variable", "name": "PIN_VAR", "variable": "myInput"},
+            {
+                "type": "field_dropdown",
+                "name": "PIN",
+                "options": [
+                    ["IO4","board.IO4"],["IO5","board.IO5"],["IO6","board.IO6"],
+                    ["IO7","board.IO7"],["IO8","board.IO8"],["IO9","board.IO9"],
+                    ["IO10","board.IO10"],["IO11","board.IO11"],["IO16","board.IO16"],
+                    ["IO17","board.IO17"],["IO18","board.IO18"],["IO19","board.IO19"],
+                    ["IO21","board.IO21"],["IO27","board.IO27"],["IO33","board.IO33"],
+                    ["IO34","board.IO34"],["IO35","board.IO35"],["IO38","board.IO38"]
+                ]
+            },
+            {
+                "type": "field_dropdown",
+                "name": "PULL",
+                "options": [
+                    ["Up", "ib.UP"], ["Down", "ib.DOWN"], ["None", "None"]
+                ]
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 200,
+        "tooltip": "Create a digital input pin with optional pull resistor"
+    },
+    {
+        "type": "ib_digital_in_read",
+        "message0": "%1 value",
+        "args0": [
+            {"type": "field_variable", "name": "PIN_VAR", "variable": "myInput"}
+        ],
+        "output": "Boolean",
+        "colour": 200,
+        "tooltip": "Read the value of a digital input (True or False)"
+    },
+    {
+        "type": "ib_digital_out_setup",
+        "message0": "Set up Digital Output %1 on pin %2",
+        "args0": [
+            {"type": "field_variable", "name": "PIN_VAR", "variable": "myOutput"},
+            {
+                "type": "field_dropdown",
+                "name": "PIN",
+                "options": [
+                    ["IO4","board.IO4"],["IO5","board.IO5"],["IO6","board.IO6"],
+                    ["IO7","board.IO7"],["IO8","board.IO8"],["IO9","board.IO9"],
+                    ["IO10","board.IO10"],["IO11","board.IO11"],["IO16","board.IO16"],
+                    ["IO17","board.IO17"],["IO18","board.IO18"],["IO19","board.IO19"],
+                    ["IO21","board.IO21"],["IO27","board.IO27"],["IO33","board.IO33"],
+                    ["IO34","board.IO34"],["IO35","board.IO35"],["IO38","board.IO38"]
+                ]
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 200,
+        "tooltip": "Create a digital output pin"
+    },
+    {
+        "type": "ib_digital_out_write",
+        "message0": "Set %1 to %2",
+        "args0": [
+            {"type": "field_variable", "name": "PIN_VAR", "variable": "myOutput"},
+            {
+                "type": "field_dropdown",
+                "name": "VALUE",
+                "options": [["True", "True"], ["False", "False"]]
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 200,
+        "tooltip": "Set a digital output to True (HIGH) or False (LOW)"
+    },
+    {
+        "type": "ib_analog_in_setup",
+        "message0": "Set up Analog Input %1 on pin %2",
+        "args0": [
+            {"type": "field_variable", "name": "PIN_VAR", "variable": "myAnalog"},
+            {
+                "type": "field_dropdown",
+                "name": "PIN",
+                "options": [
+                    ["IO1","board.IO1"],["IO2","board.IO2"],["IO3","board.IO3"],
+                    ["IO4","board.IO4"],["IO5","board.IO5"],["IO6","board.IO6"],
+                    ["IO7","board.IO7"],["IO8","board.IO8"],["IO9","board.IO9"],
+                    ["IO10","board.IO10"],["IO11","board.IO11"],["IO33","board.IO33"],
+                    ["IO34","board.IO34"]
+                ]
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 40,
+        "tooltip": "Create an analog input pin (returns 0–65535)"
+    },
+    {
+        "type": "ib_analog_in_read",
+        "message0": "%1 value",
+        "args0": [
+            {"type": "field_variable", "name": "PIN_VAR", "variable": "myAnalog"}
+        ],
+        "output": "Number",
+        "colour": 40,
+        "tooltip": "Read the analog value (0–65535)"
+    },
+    {
+        "type": "ib_analog_out_setup",
+        "message0": "Set up Analog Output %1 on pin %2",
+        "args0": [
+            {"type": "field_variable", "name": "PIN_VAR", "variable": "myDAC"},
+            {
+                "type": "field_dropdown",
+                "name": "PIN",
+                "options": [
+                    ["IO25", "board.IO25"], ["IO26", "board.IO26"]
+                ]
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 40,
+        "tooltip": "Create an analog output (DAC) pin — IO25 or IO26 only"
+    },
+    {
+        "type": "ib_analog_out_write",
+        "message0": "Set %1 to %2",
+        "args0": [
+            {"type": "field_variable", "name": "PIN_VAR", "variable": "myDAC"},
+            {"type": "field_number", "name": "VALUE", "value": 32768, "min": 0, "max": 65535, "precision": 1}
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 40,
+        "tooltip": "Set DAC output value (0–65535, where 32768 ≈ 1.65V)"
+    },
+    {
         "type": "ib_event_state",
         "message0": "Event is %1",
         "args0": [

@@ -33,6 +33,47 @@ python.pythonGenerator.forBlock['ib_servo_angle'] = function(block) {
     return `${varName}.angle = ${angle}\n`;
 };
 
+python.pythonGenerator.forBlock['ib_digital_in_setup'] = function(block) {
+    const varName = python.pythonGenerator.getVariableName(block.getFieldValue('PIN_VAR'));
+    const pin = block.getFieldValue('PIN');
+    const pull = block.getFieldValue('PULL');
+    if (pull === 'None') return `${varName} = ib.DigitalIn(${pin})\n`;
+    return `${varName} = ib.DigitalIn(${pin}, pull=${pull})\n`;
+};
+python.pythonGenerator.forBlock['ib_digital_in_read'] = function(block) {
+    const varName = python.pythonGenerator.getVariableName(block.getFieldValue('PIN_VAR'));
+    return [`${varName}.value`, python.Order.ATOMIC];
+};
+python.pythonGenerator.forBlock['ib_digital_out_setup'] = function(block) {
+    const varName = python.pythonGenerator.getVariableName(block.getFieldValue('PIN_VAR'));
+    const pin = block.getFieldValue('PIN');
+    return `${varName} = ib.DigitalOut(${pin})\n`;
+};
+python.pythonGenerator.forBlock['ib_digital_out_write'] = function(block) {
+    const varName = python.pythonGenerator.getVariableName(block.getFieldValue('PIN_VAR'));
+    const val = block.getFieldValue('VALUE');
+    return `${varName}.value = ${val}\n`;
+};
+python.pythonGenerator.forBlock['ib_analog_in_setup'] = function(block) {
+    const varName = python.pythonGenerator.getVariableName(block.getFieldValue('PIN_VAR'));
+    const pin = block.getFieldValue('PIN');
+    return `${varName} = ib.AnalogIn(${pin})\n`;
+};
+python.pythonGenerator.forBlock['ib_analog_in_read'] = function(block) {
+    const varName = python.pythonGenerator.getVariableName(block.getFieldValue('PIN_VAR'));
+    return [`${varName}.value`, python.Order.ATOMIC];
+};
+python.pythonGenerator.forBlock['ib_analog_out_setup'] = function(block) {
+    const varName = python.pythonGenerator.getVariableName(block.getFieldValue('PIN_VAR'));
+    const pin = block.getFieldValue('PIN');
+    return `${varName} = ib.AnalogOut(${pin})\n`;
+};
+python.pythonGenerator.forBlock['ib_analog_out_write'] = function(block) {
+    const varName = python.pythonGenerator.getVariableName(block.getFieldValue('PIN_VAR'));
+    const val = block.getFieldValue('VALUE');
+    return `${varName}.value = ${val}\n`;
+};
+
 python.pythonGenerator.forBlock['ib_brightness'] = function(block) {
     return `ib.brightness = ${block.getFieldValue('BRIGHTNESS')}\n`;
 };
@@ -66,6 +107,44 @@ javascript.javascriptGenerator.forBlock['ib_servo_angle'] = function(block) {
     const varName = block.getFieldValue('SERVO_VAR');
     const angle = block.getFieldValue('ANGLE');
     return `printToConsole('Servo "${varName}" → ${angle}°', false, 'sys');\n`;
+};
+javascript.javascriptGenerator.forBlock['ib_digital_in_setup'] = function(block) {
+    const varName = block.getFieldValue('PIN_VAR');
+    const pin = block.getFieldValue('PIN');
+    return `printToConsole('Digital Input "${varName}" ready on ${pin}', false, 'sys');\n`;
+};
+javascript.javascriptGenerator.forBlock['ib_digital_in_read'] = function(block) {
+    const varName = block.getFieldValue('PIN_VAR');
+    return [`(simDigitalRead('${varName}'))`, javascript.Order.ATOMIC];
+};
+javascript.javascriptGenerator.forBlock['ib_digital_out_setup'] = function(block) {
+    const varName = block.getFieldValue('PIN_VAR');
+    const pin = block.getFieldValue('PIN');
+    return `printToConsole('Digital Output "${varName}" ready on ${pin}', false, 'sys');\n`;
+};
+javascript.javascriptGenerator.forBlock['ib_digital_out_write'] = function(block) {
+    const varName = block.getFieldValue('PIN_VAR');
+    const val = block.getFieldValue('VALUE');
+    return `printToConsole('Digital Output "${varName}" → ${val}', false, 'sys');\n`;
+};
+javascript.javascriptGenerator.forBlock['ib_analog_in_setup'] = function(block) {
+    const varName = block.getFieldValue('PIN_VAR');
+    const pin = block.getFieldValue('PIN');
+    return `printToConsole('Analog Input "${varName}" ready on ${pin}', false, 'sys');\n`;
+};
+javascript.javascriptGenerator.forBlock['ib_analog_in_read'] = function(block) {
+    const varName = block.getFieldValue('PIN_VAR');
+    return [`(simAnalogRead('${varName}'))`, javascript.Order.ATOMIC];
+};
+javascript.javascriptGenerator.forBlock['ib_analog_out_setup'] = function(block) {
+    const varName = block.getFieldValue('PIN_VAR');
+    const pin = block.getFieldValue('PIN');
+    return `printToConsole('Analog Output "${varName}" ready on ${pin}', false, 'sys');\n`;
+};
+javascript.javascriptGenerator.forBlock['ib_analog_out_write'] = function(block) {
+    const varName = block.getFieldValue('PIN_VAR');
+    const val = block.getFieldValue('VALUE');
+    return `printToConsole('Analog Output "${varName}" → ${val}', false, 'sys');\n`;
 };
 javascript.javascriptGenerator.forBlock['ib_brightness'] = function(block) {
     const b = block.getFieldValue('BRIGHTNESS');

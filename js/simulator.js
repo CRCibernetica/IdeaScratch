@@ -35,6 +35,16 @@ function setPixelColor(rgbString) {
     }
 }
 
+function simDigitalRead(varName) {
+    printToConsole(`Digital Input "${varName}" read → false (simulated)`, false, 'sys');
+    return false;
+}
+
+function simAnalogRead(varName) {
+    printToConsole(`Analog Input "${varName}" read → 0 (simulated)`, false, 'sys');
+    return 0;
+}
+
 function printToConsole(msg, isHardware = false, type = 'normal') {
     const cons = document.getElementById('simConsole');
     let cleanMsg = msg;
