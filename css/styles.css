@@ -75,7 +75,55 @@ h2 {
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); z-index: 10;
 }
 
-#sim-motor1, #sim-motor2 {
+#sim-motors {
+    width: 100%;
+    padding: 8px 14px 12px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-top: 1px solid #e5e7eb;
+}
+.sim-motor-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78em;
+    font-weight: 600;
+}
+.sim-motor-label {
+    width: 48px;
+    color: #6b7280;
+    flex-shrink: 0;
+}
+.sim-motor-bar-wrap {
+    flex: 1;
+    height: 12px;
+    background: #f3f4f6;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #e5e7eb;
+}
+.sim-motor-bar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 0%;
+    left: 50%;
+    border-radius: 6px;
+    transition: all 0.15s ease-in-out;
+    background: #6b7280;
+}
+.sim-motor-value {
+    width: 36px;
+    text-align: right;
+    color: #374151;
+    font-family: 'Consolas', monospace;
+    flex-shrink: 0;
+}
+
+#sim-motor1-overlay, #sim-motor2-overlay {
     position: absolute;
     width: 5.81%;
     height: 7.34%;
@@ -86,8 +134,8 @@ h2 {
     z-index: 10;
     pointer-events: none;
 }
-#sim-motor1 { top: 38.12%; left: 90.96%; }
-#sim-motor2 { top: 38.12%; left: 9.81%; }
+#sim-motor1-overlay { top: 38.12%; left: 90.96%; }
+#sim-motor2-overlay { top: 38.12%; left: 9.81%; }
 
 #sim-boot-hitbox {
     position: absolute; top: 16.7%; left: 93.1%; width: 20px; height: 32px;

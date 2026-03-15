@@ -36,18 +36,41 @@ function setPixelColor(rgbString) {
 }
 
 function setMotorState(motorNum, throttle) {
-    const el = document.getElementById(motorNum === 1 ? 'sim-motor1' : 'sim-motor2');
     const t = Math.max(-1, Math.min(1, parseFloat(throttle)));
     const abs = Math.abs(t);
+
+    // --- overlay on SVG board ---
+    const overlay = document.getElementById(`sim-motor${motorNum}-overlay`);
     if (abs === 0) {
-        el.style.backgroundColor = 'rgba(100, 100, 100, 0.4)';
-        el.style.boxShadow = 'none';
+        overlay.style.backgroundColor = 'rgba(100, 100, 100, 0.4)';
+        overlay.style.boxShadow = 'none';
     } else if (t > 0) {
-        el.style.backgroundColor = `rgba(16, 185, 129, ${0.3 + abs * 0.7})`;
-        el.style.boxShadow = `0 0 ${abs * 10}px ${abs * 4}px rgba(16, 185, 129, 0.7)`;
+        overlay.style.backgroundColor = `rgba(16, 185, 129, ${0.3 + abs * 0.7})`;
+        overlay.style.boxShadow = `0 0 ${abs * 10}px ${abs * 4}px rgba(16, 185, 129, 0.8)`;
     } else {
-        el.style.backgroundColor = `rgba(239, 68, 68, ${0.3 + abs * 0.7})`;
-        el.style.boxShadow = `0 0 ${abs * 10}px ${abs * 4}px rgba(239, 68, 68, 0.7)`;
+        overlay.style.backgroundColor = `rgba(239, 68, 68, ${0.3 + abs * 0.7})`;
+        overlay.style.boxShadow = `0 0 ${abs * 10}px ${abs * 4}px rgba(239, 68, 68, 0.8)`;
+    }
+
+    // --- status bar panel ---
+    const bar = document.getElementById(`sim-motor${motorNum}-bar`);
+    const val = document.getElementById(`sim-motor${motorNum}-value`);
+    val.textContent = t.toFixed(2);
+    if (abs === 0) {
+        bar.style.width = '0%';
+        bar.style.left = '50%';
+        bar.style.background = '#6b7280';
+        val.style.color = '#6b7280';
+    } else if (t > 0) {
+        bar.style.width = `${abs * 50}%`;
+        bar.style.left = '50%';
+        bar.style.background = '#10b981';
+        val.style.color = '#10b981';
+    } else {
+        bar.style.width = `${abs * 50}%`;
+        bar.style.left = `${50 - abs * 50}%`;
+        bar.style.background = '#ef4444';
+        val.style.color = '#ef4444';
     }
 }
 
