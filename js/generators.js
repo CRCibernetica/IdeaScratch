@@ -22,6 +22,17 @@ python.pythonGenerator.forBlock['ib_event_state'] = function(block) {
     return [`event.${state}`, python.Order.ATOMIC];
 };
 
+python.pythonGenerator.forBlock['ib_servo_setup'] = function(block) {
+    const varName = python.pythonGenerator.getVariableName(block.getFieldValue('SERVO_VAR'));
+    const pin = block.getFieldValue('PIN');
+    return `${varName} = ib.Servo(${pin})\n`;
+};
+python.pythonGenerator.forBlock['ib_servo_angle'] = function(block) {
+    const varName = python.pythonGenerator.getVariableName(block.getFieldValue('SERVO_VAR'));
+    const angle = block.getFieldValue('ANGLE');
+    return `${varName}.angle = ${angle}\n`;
+};
+
 python.pythonGenerator.forBlock['ib_brightness'] = function(block) {
     return `ib.brightness = ${block.getFieldValue('BRIGHTNESS')}\n`;
 };
@@ -45,6 +56,16 @@ javascript.javascriptGenerator.forBlock['time_sleep'] = function(block) {
 javascript.javascriptGenerator.forBlock['controls_forever'] = function(block) {
     const branch = javascript.javascriptGenerator.statementToCode(block, 'DO');
     return `while (simIsRunning) {\n${branch}\n  await simSleep(20);\n}\n`;
+};
+javascript.javascriptGenerator.forBlock['ib_servo_setup'] = function(block) {
+    const varName = block.getFieldValue('SERVO_VAR');
+    const pin = block.getFieldValue('PIN');
+    return `printToConsole('Servo "${varName}" ready on ${pin}', false, 'sys');\n`;
+};
+javascript.javascriptGenerator.forBlock['ib_servo_angle'] = function(block) {
+    const varName = block.getFieldValue('SERVO_VAR');
+    const angle = block.getFieldValue('ANGLE');
+    return `printToConsole('Servo "${varName}" → ${angle}°', false, 'sys');\n`;
 };
 javascript.javascriptGenerator.forBlock['ib_brightness'] = function(block) {
     const b = block.getFieldValue('BRIGHTNESS');
