@@ -217,11 +217,27 @@ button.hw-btn:disabled { opacity: 0.45; cursor: not-allowed; }
     white-space: pre;
     font-family: 'Consolas', 'Courier New', monospace;
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 320px;
     margin: 0;
     font-size: 0.9em;
     line-height: 1.6;
     min-height: 60px;
 }
+
+#copyCodeBtn {
+    margin-left: auto;
+    background: none;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.78em;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+#copyCodeBtn:hover { background: #e5e7eb; color: #374151; }
 
 #simConsole {
     background: #1a1a1a; color: #34d399; padding: 15px;

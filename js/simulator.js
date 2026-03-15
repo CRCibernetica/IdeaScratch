@@ -139,6 +139,16 @@ async function runSimulator() {
     try { await executeSim(); } catch (err) { console.error("Simulator error:", err); }
 }
 
+function copyCode(e) {
+    e.preventDefault();
+    const code = document.getElementById('codePreview').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('copyCodeBtn');
+        btn.textContent = '✓ Copied!';
+        setTimeout(() => btn.textContent = '⎘ Copy', 1500);
+    });
+}
+
 function stopSimulator() {
     simIsRunning = false;
     simPixelBrightness = 0.3;
