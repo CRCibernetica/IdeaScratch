@@ -68,8 +68,53 @@ Baud rate: **115200**
 
 - Boot button hitbox overlays the top-right of the board SVG
 - Mouse/touch events push `'pressed'`/`'released'` onto `simEventQueue`
-- `setPixelColor()` updates the visual pixel on the SVG board
+- `setPixelColor(rgbString)` — updates the visual pixel on the SVG board; applies current brightness
+- `setPixelBrightness(0–1)` — sets `simPixelBrightness` and re-renders the pixel
+- `colorwheel(0–255)` — JS port of CircuitPython's `rainbowio.colorwheel`, returns an `rgb(...)` string
+- Servo/motor/GPIO blocks print status messages to the simulator console via `printToConsole()`
 - Code executes via `new AsyncFunction(...)` to support `await`-based timing
+
+## IdeaBoard Library (`ideaboard.py`)
+
+The board library lives at `lib/ideaboard.py` in the companion repo (`circuitpython-ideaboard`). Key API:
+
+| Feature | Python usage |
+|---|---|
+| NeoPixel color | `ib.pixel = (r, g, b)` |
+| NeoPixel brightness | `ib.brightness = 0.3` |
+| Rainbow color | `ib.arcoiris = 0–255` |
+| DC motors | `ib.motor_1.throttle = -1.0 to 1.0` |
+| Servo setup | `s = ib.Servo(board.IOx)` |
+| Servo angle | `s.angle = 0–180` |
+| Digital input | `p = ib.DigitalIn(board.IOx, pull=ib.UP)` then `p.value` |
+| Digital output | `p = ib.DigitalOut(board.IOx)` then `p.value = True` |
+| Analog input | `p = ib.AnalogIn(board.IOx)` then `p.value` (0–65535) |
+| Analog output (DAC) | `p = ib.AnalogOut(board.IO25/IO26)` then `p.value` (0–65535) |
+| Map range | `ib.map_range(val, in_min, in_max, out_min, out_max)` |
+
+## Implemented Blocks
+
+| Block type | Category | Description |
+|---|---|---|
+| `ib_pixel` | IdeaBoard | Set NeoPixel to a preset color |
+| `ib_brightness` | IdeaBoard | Set NeoPixel brightness (0.0–1.0) |
+| `ib_arcoiris` | IdeaBoard | Set NeoPixel rainbow color (0–255) |
+| `ib_motors` | IdeaBoard | Set DC motor throttle (-1.0 to 1.0) |
+| `ib_servo_setup` | IdeaBoard › Servo | Create a servo on a pin (variable + pin dropdown) |
+| `ib_servo_angle` | IdeaBoard › Servo | Set servo angle (0–180°) |
+| `ib_event_handler` | Events | Check boot button events |
+| `ib_event_state` | Events | Boolean: event is pressed/released |
+| `controls_forever` | Control | Infinite loop |
+| `time_sleep` | Control | Wait N seconds |
+| `controls_if` | Logic | If/else (built-in Blockly) |
+| `text_print` | Text | Print to console (built-in Blockly) |
+| `text` | Text | String literal (built-in Blockly) |
+
+## Not Yet Implemented
+
+- `ib_digital_in` / `ib_digital_out` — GPIO digital read/write
+- `ib_analog_in` / `ib_analog_out` — analog read / DAC write
+- `ib_map_range` — scale a value between ranges
 
 ## CDN Dependencies
 
