@@ -94,12 +94,8 @@ Blockly.common.defineBlocksWithJsonArray([
                 "type": "field_dropdown",
                 "name": "PIN",
                 "options": [
-                    ["IO4", "board.IO4"], ["IO5", "board.IO5"], ["IO6", "board.IO6"],
-                    ["IO7", "board.IO7"], ["IO8", "board.IO8"], ["IO9", "board.IO9"],
-                    ["IO10", "board.IO10"], ["IO11", "board.IO11"], ["IO16", "board.IO16"],
-                    ["IO17", "board.IO17"], ["IO18", "board.IO18"], ["IO19", "board.IO19"],
-                    ["IO21", "board.IO21"], ["IO33", "board.IO33"], ["IO34", "board.IO34"],
-                    ["IO35", "board.IO35"], ["IO38", "board.IO38"]
+                    ["IO4", "board.IO4"], ["IO5", "board.IO5"], ["IO18", "board.IO18"],
+                    ["IO19", "board.IO19"], ["IO23", "board.IO23"]
                 ]
             }
         ],
