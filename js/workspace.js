@@ -37,6 +37,9 @@ workspace.addChangeListener(() => {
     const generatedCode = python.pythonGenerator.workspaceToCode(workspace);
     const header = `import board\nfrom ideaboard import IdeaBoard\nfrom time import sleep\nimport keypad\n\nib = IdeaBoard()\nkeys = keypad.Keys((board.IO0,), value_when_pressed=False, pull=True)\n\n`;
     document.getElementById('codePreview').innerText = header + generatedCode;
+
+    const hasMotors = workspace.getBlocksByType('ib_motors', true).length > 0;
+    document.getElementById('sim-motors').style.display = hasMotors ? 'flex' : 'none';
 });
 
 // Fix Blockly Resize Bug — forces Blockly to redraw when panels are opened/closed or window resizes
