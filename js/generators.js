@@ -2,6 +2,13 @@
 python.pythonGenerator.forBlock['ib_pixel'] = function(block) {
     return `ib.pixel = (${block.getFieldValue('COLOUR')})\n`;
 };
+python.pythonGenerator.forBlock['controls_on_start'] = function(block) {
+    const indent = python.pythonGenerator.INDENT || '  ';
+    let branch = python.pythonGenerator.statementToCode(block, 'DO');
+    if (!branch) branch = indent + 'pass\n';
+    return branch;
+};
+
 python.pythonGenerator.forBlock['time_sleep'] = function(block) {
     return `sleep(${block.getFieldValue('SECONDS') || 1})\n`;
 };
@@ -97,6 +104,10 @@ python.pythonGenerator.forBlock['ib_motors'] = function(block) {
 };
 
 // --- JAVASCRIPT SIMULATOR GENERATORS ---
+javascript.javascriptGenerator.forBlock['controls_on_start'] = function(block) {
+    return javascript.javascriptGenerator.statementToCode(block, 'DO');
+};
+
 javascript.javascriptGenerator.forBlock['ib_pixel'] = function(block) {
     return `setPixelColor('rgb(${block.getFieldValue('COLOUR')})');\n`;
 };

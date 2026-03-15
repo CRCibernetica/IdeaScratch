@@ -19,6 +19,13 @@ Blockly.common.defineBlocksWithJsonArray([
         "colour": 230
     },
     {
+        "type": "controls_on_start",
+        "message0": "On Start %1 %2",
+        "args0": [{"type": "input_dummy"}, {"type": "input_statement", "name": "DO"}],
+        "colour": 120,
+        "tooltip": "Code inside here runs once at the beginning"
+    },
+    {
         "type": "time_sleep",
         "message0": "Wait %1 seconds",
         "args0": [{"type": "field_number", "name": "SECONDS", "value": 1}],
