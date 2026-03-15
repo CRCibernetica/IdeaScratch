@@ -5,8 +5,11 @@ python.pythonGenerator.forBlock['ib_pixel'] = function(block) {
 python.pythonGenerator.forBlock['controls_on_start'] = function(block) {
     const indent = python.pythonGenerator.INDENT || '  ';
     let branch = python.pythonGenerator.statementToCode(block, 'DO');
-    if (!branch) branch = indent + 'pass\n';
-    return branch;
+    if (!branch) return '';
+    // statementToCode adds one indent level — strip it for top-level output
+    return branch.split('\n').map(line =>
+        line.startsWith(indent) ? line.slice(indent.length) : line
+    ).join('\n');
 };
 
 python.pythonGenerator.forBlock['time_sleep'] = function(block) {
