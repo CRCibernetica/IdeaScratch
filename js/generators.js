@@ -74,6 +74,15 @@ python.pythonGenerator.forBlock['ib_analog_out_write'] = function(block) {
     return `${varName}.value = ${val}\n`;
 };
 
+python.pythonGenerator.forBlock['ib_map_range'] = function(block) {
+    const value = python.pythonGenerator.valueToCode(block, 'VALUE', python.Order.NONE) || '0';
+    const inMin = block.getFieldValue('IN_MIN');
+    const inMax = block.getFieldValue('IN_MAX');
+    const outMin = block.getFieldValue('OUT_MIN');
+    const outMax = block.getFieldValue('OUT_MAX');
+    return [`ib.map_range(${value}, ${inMin}, ${inMax}, ${outMin}, ${outMax})`, python.Order.FUNCTION_CALL];
+};
+
 python.pythonGenerator.forBlock['ib_brightness'] = function(block) {
     return `ib.brightness = ${block.getFieldValue('BRIGHTNESS')}\n`;
 };
@@ -146,6 +155,15 @@ javascript.javascriptGenerator.forBlock['ib_analog_out_write'] = function(block)
     const val = block.getFieldValue('VALUE');
     return `printToConsole('Analog Output "${varName}" → ${val}', false, 'sys');\n`;
 };
+javascript.javascriptGenerator.forBlock['ib_map_range'] = function(block) {
+    const value = javascript.javascriptGenerator.valueToCode(block, 'VALUE', javascript.Order.NONE) || '0';
+    const inMin = block.getFieldValue('IN_MIN');
+    const inMax = block.getFieldValue('IN_MAX');
+    const outMin = block.getFieldValue('OUT_MIN');
+    const outMax = block.getFieldValue('OUT_MAX');
+    return [`(${outMin} + (${value} - ${inMin}) * (${outMax} - ${outMin}) / (${inMax} - ${inMin}))`, javascript.Order.ADDITION];
+};
+
 javascript.javascriptGenerator.forBlock['ib_brightness'] = function(block) {
     const b = block.getFieldValue('BRIGHTNESS');
     return `setPixelBrightness(${b});\n`;

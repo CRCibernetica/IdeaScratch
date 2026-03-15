@@ -255,6 +255,21 @@ Blockly.common.defineBlocksWithJsonArray([
         "tooltip": "Set DAC output value (0–65535, where 32768 ≈ 1.65V)"
     },
     {
+        "type": "ib_map_range",
+        "message0": "Map %1 from %2 – %3 to %4 – %5",
+        "args0": [
+            {"type": "input_value", "name": "VALUE", "check": "Number"},
+            {"type": "field_number", "name": "IN_MIN", "value": 0},
+            {"type": "field_number", "name": "IN_MAX", "value": 65535},
+            {"type": "field_number", "name": "OUT_MIN", "value": 0},
+            {"type": "field_number", "name": "OUT_MAX", "value": 180}
+        ],
+        "inputsInline": true,
+        "output": "Number",
+        "colour": 40,
+        "tooltip": "Scale a value from one range to another (e.g. analog 0–65535 → angle 0–180)"
+    },
+    {
         "type": "ib_event_state",
         "message0": "Event is %1",
         "args0": [
