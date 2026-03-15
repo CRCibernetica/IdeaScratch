@@ -3,7 +3,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
-    background: #16161e;
+    background: #f5f5f5;
     height: 100vh;
     box-sizing: border-box;
     display: flex;
@@ -16,12 +16,13 @@ h2 {
     padding: 0 20px;
     height: 52px;
     line-height: 52px;
-    background: #1e1e2e;
-    color: #e2e8f0;
+    background: #ffffff;
+    color: #1f2937;
     font-size: 1.15em;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    border-bottom: 3px solid #7c3aed;
+    letter-spacing: 0.3px;
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     flex-shrink: 0;
 }
 
@@ -30,50 +31,42 @@ h2 {
 
 /* === SIMULATOR SIDEBAR === */
 .sim-sidebar {
-    width: 360px;
-    background: #1e1e2e;
+    width: 300px;
+    background: #1a1a1a;
     border-radius: 10px;
-    border: 1px solid #2d2d3a;
     flex-shrink: 0;
     transition: width 0.3s ease, margin 0.3s ease, opacity 0.3s ease;
     overflow: hidden;
     align-self: flex-start;
 }
-.sim-sidebar.collapsed { width: 0px; opacity: 0; border: none; }
+.sim-sidebar.collapsed { width: 0px; opacity: 0; }
 
-.sim-inner { width: 320px; padding: 0; display: flex; flex-direction: column; align-items: center; }
+.sim-inner { width: 300px; padding: 0; display: flex; flex-direction: column; align-items: center; }
 
-/* Simulator header strip */
-.sim-inner::before {
-    content: "Simulator";
-    display: block;
-    width: 100%;
-    background: #7c3aed;
-    color: white;
-    font-weight: 700;
-    font-size: 0.78em;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    padding: 8px 16px;
-    box-sizing: border-box;
-}
-
-.sim-controls { width: 100%; display: flex; gap: 8px; padding: 12px 16px; box-sizing: border-box; }
-
-.sim-btn {
-    flex: 1; padding: 8px; border-radius: 20px; border: none;
-    font-weight: bold; cursor: pointer; color: white;
-    background: #7c3aed; transition: 0.2s; font-size: 0.85em;
-}
-.sim-btn:hover { background: #6d28d9; }
-#stopSimBtn { background: #ef4444; }
-#stopSimBtn:hover { background: #dc2626; }
+/* Remove the purple header strip */
+.sim-inner::before { display: none; }
 
 .board-container {
-    position: relative; display: inline-block; margin: 0 auto 16px;
-    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.6));
+    position: relative; display: inline-block; margin: 16px auto 0;
+    filter: drop-shadow(0 6px 16px rgba(0,0,0,0.7));
+    order: 1;
 }
-.board-img { width: 280px; height: auto; display: block; user-select: none; -webkit-user-drag: none; }
+.board-img { width: 256px; height: auto; display: block; user-select: none; -webkit-user-drag: none; }
+
+.sim-controls {
+    order: 2;
+    width: 100%; display: flex; gap: 8px; padding: 10px 14px 14px;
+    box-sizing: border-box; border-top: 1px solid #2d2d2d;
+}
+
+.sim-btn {
+    flex: 1; padding: 7px; border-radius: 6px; border: none;
+    font-weight: bold; cursor: pointer; color: white;
+    background: #5b21b6; transition: 0.2s; font-size: 0.82em;
+}
+.sim-btn:hover { background: #4c1d95; }
+#stopSimBtn { background: #dc2626; }
+#stopSimBtn:hover { background: #b91c1c; }
 
 #sim-pixel {
     position: absolute; top: 52.5%; left: 49.7%; width: 22px; height: 22px; transform: translate(-50%, -50%);
@@ -94,39 +87,44 @@ h2 {
 
 .hardware-controls {
     display: flex; gap: 8px; align-items: center;
-    background: #1e1e2e; padding: 10px 16px;
-    border-radius: 10px; border-bottom: 2px solid #7c3aed;
+    background: #ffffff; padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
 button.hw-btn {
-    padding: 8px 18px; border-radius: 20px; border: none;
-    color: #e2e8f0; cursor: pointer; font-weight: bold;
-    transition: background 0.2s; background: #374151; font-size: 0.85em;
+    padding: 8px 18px; border-radius: 20px; border: 1px solid #d1d5db;
+    color: #374151; cursor: pointer; font-weight: 600;
+    transition: background 0.2s; background: #f3f4f6; font-size: 0.85em;
 }
-button.hw-btn:hover { background: #4b5563; }
-button.hw-btn:disabled { background: #374151 !important; opacity: 0.4; cursor: not-allowed; }
+button.hw-btn:hover { background: #e5e7eb; }
+button.hw-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 #toggleSidebarBtn { margin-right: 6px; }
-#connectBtn { background: #0ea5e9; }
-#connectBtn:hover { background: #0284c7; }
-#runBtn { background: #10b981; }
-#runBtn:hover { background: #059669; }
-#stopBtn { background: #ef4444; }
-#stopBtn:hover { background: #dc2626; }
+#connectBtn { background: #0ea5e9; color: white; border-color: #0ea5e9; }
+#connectBtn:hover { background: #0284c7; border-color: #0284c7; }
+#runBtn { background: #10b981; color: white; border-color: #10b981; }
+#runBtn:hover { background: #059669; border-color: #059669; }
+#stopBtn { background: #ef4444; color: white; border-color: #ef4444; }
+#stopBtn:hover { background: #dc2626; border-color: #dc2626; }
 
-.status { font-size: 0.85em; color: #94a3b8; font-weight: 500; margin-left: auto; }
+.status { font-size: 0.85em; color: #6b7280; font-weight: 500; margin-left: auto; }
 
 #blocklyDiv {
-    flex: 1; border: none; border-radius: 10px;
+    flex: 1; border: 1px solid #e5e7eb; border-radius: 10px;
     background: #f9f9f9; overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
+/* === CODE & CONSOLE PANELS === */
 .code-container {
-    background: #1e1e1e;
+    background: #ffffff;
     border-radius: 10px;
-    border: 1px solid #2d2d3a;
+    border: 1px solid #e5e7eb;
     overflow: hidden;
     padding: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
 .code-container summary {
@@ -140,17 +138,17 @@ button.hw-btn:disabled { background: #374151 !important; opacity: 0.4; cursor: n
     text-transform: uppercase;
     letter-spacing: 1px;
     cursor: pointer;
-    color: #e2e8f0;
-    background: #252540;
-    border-bottom: 2px solid #7c3aed;
+    color: #374151;
+    background: #f3f4f6;
+    border-bottom: 1px solid #e5e7eb;
     outline: none;
 }
 .code-container summary::-webkit-details-marker { display: none; }
 .code-container summary::before { content: "⌨"; font-size: 1.1em; }
 
 #codePreview {
-    background: #1e1e1e;
-    color: #d4d4d4;
+    background: #f8f9fa;
+    color: #24292e;
     padding: 16px 16px 16px 20px;
     border-left: 3px solid #7c3aed;
     white-space: pre;
@@ -163,46 +161,45 @@ button.hw-btn:disabled { background: #374151 !important; opacity: 0.4; cursor: n
 }
 
 #simConsole {
-    background: #1e1e1e; color: #34d399; padding: 15px;
+    background: #1a1a1a; color: #34d399; padding: 15px;
     border-left: 3px solid #10b981;
     height: 160px; overflow-y: auto; font-family: 'Consolas', monospace;
-    margin: 0; white-space: pre-wrap;
-    line-height: 1.5;
+    margin: 0; white-space: pre-wrap; line-height: 1.5;
 }
 .error-text { color: #f87171; }
-.sys-text { color: #64748b; font-style: italic; }
+.sys-text { color: #9ca3af; font-style: italic; }
 
 /* Clear console button (inline style overridden) */
 #consoleDetails > button {
     display: block; margin: 10px 16px 12px;
-    background: #374151 !important; color: #e2e8f0 !important;
-    border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer;
-    font-weight: bold; font-size: 0.85em; transition: background 0.2s;
+    background: #f3f4f6 !important; color: #374151 !important;
+    border: 1px solid #d1d5db !important; padding: 7px 16px; border-radius: 20px;
+    cursor: pointer; font-weight: 600; font-size: 0.85em; transition: background 0.2s;
 }
-#consoleDetails > button:hover { background: #4b5563 !important; }
+#consoleDetails > button:hover { background: #e5e7eb !important; }
 
 /* === DROPDOWNS === */
 .dropdown-wrapper { position: relative; }
 .dropdown-menu {
     display: none; position: absolute; top: calc(100% + 4px); left: 0;
-    background: #1e1e2e; border: 1px solid #374151;
-    border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    background: #ffffff; border: 1px solid #e5e7eb;
+    border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
     z-index: 1000; min-width: 180px;
 }
 .dropdown-menu.open { display: block; }
 .dropdown-item {
-    padding: 10px 15px; cursor: pointer; font-size: 0.9em; color: #e2e8f0;
+    padding: 10px 15px; cursor: pointer; font-size: 0.9em; color: #374151;
     display: flex; justify-content: space-between; align-items: center; white-space: nowrap;
 }
-.dropdown-item:hover { background: #2d2d3a; }
+.dropdown-item:hover { background: #f3f4f6; }
 .dropdown-item:first-child { border-radius: 8px 8px 0 0; }
 .dropdown-item:last-child { border-radius: 0 0 8px 8px; }
-.dropdown-item.save-item { color: #34d399; font-weight: bold; }
-.dropdown-item.no-projects { color: #64748b; cursor: default; font-style: italic; }
+.dropdown-item.save-item { color: #059669; font-weight: bold; }
+.dropdown-item.no-projects { color: #9ca3af; cursor: default; font-style: italic; }
 .dropdown-item.no-projects:hover { background: none; }
-.dropdown-divider { border-top: 1px solid #374151; margin: 2px 0; }
+.dropdown-divider { border-top: 1px solid #e5e7eb; margin: 2px 0; }
 .delete-btn {
-    background: none; border: none; color: #f87171; cursor: pointer;
+    background: none; border: none; color: #ef4444; cursor: pointer;
     font-size: 0.85em; padding: 2px 5px; border-radius: 3px; margin-left: 10px; line-height: 1;
 }
 .delete-btn:hover { background: #ef4444; color: white; }
