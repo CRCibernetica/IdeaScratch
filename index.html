@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CRCibernetica IdeaScratch v1.65</title>
+    <title>CRCibernetica IdeaScratch v1.66</title>
 
     <script src="https://cdn.jsdelivr.net/npm/blockly/blockly.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blockly/python_compressed.js"></script>
@@ -12,7 +12,7 @@
 </head>
 <body>
 
-    <h2>CRCibernetica IdeaScratch v1.65</h2>
+    <h2>CRCibernetica IdeaScratch v1.66</h2>
 
     <div id="app-layout">
 
@@ -95,7 +95,10 @@
                 <block type="ib_arcoiris"></block>
             </category>
             <category name="Motor" colour="230">
-                <block type="ib_motors"></block>
+                <block type="ib_motors">
+                    <value name="MOTOR1"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                    <value name="MOTOR2"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                </block>
             </category>
             <category name="Servo" colour="180">
                 <block type="ib_servo_setup"></block>
