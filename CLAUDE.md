@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-IdeaScratch (v1.58) is a browser-based visual programming IDE for the **IdeaBoard** microcontroller. Users drag-and-drop Blockly blocks to generate CircuitPython code, then either simulate it in the browser or flash it to real hardware via Web Serial API.
+CRCibernetica IdeaScratch (v1.59) is a browser-based visual programming IDE for the **IdeaBoard** microcontroller. Users drag-and-drop Blockly blocks to generate CircuitPython code, then either simulate it in the browser or flash it to real hardware via Web Serial API.
 
 ## Running the App
 
@@ -22,7 +22,7 @@ The companion file **`ideaboard.svg`** is the visual board diagram embedded in t
 ## Versioning
 
 The version number appears in two places and **must be updated on every commit**:
-- `index.html` — `<title>` tag and `<h2>` heading (e.g. `IdeaScratch v1.30`)
+- `index.html` — `<title>` tag and `<h2>` heading (e.g. `CRCibernetica IdeaScratch v1.59`)
 - `CLAUDE.md` — project overview line
 
 Increment the minor version (e.g. v1.30 → v1.31) for each change unless the user specifies otherwise.
