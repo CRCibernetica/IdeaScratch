@@ -35,6 +35,22 @@ function setPixelColor(rgbString) {
     }
 }
 
+function setMotorState(motorNum, throttle) {
+    const el = document.getElementById(motorNum === 1 ? 'sim-motor1' : 'sim-motor2');
+    const t = Math.max(-1, Math.min(1, parseFloat(throttle)));
+    const abs = Math.abs(t);
+    if (abs === 0) {
+        el.style.backgroundColor = 'rgba(100, 100, 100, 0.4)';
+        el.style.boxShadow = 'none';
+    } else if (t > 0) {
+        el.style.backgroundColor = `rgba(16, 185, 129, ${0.3 + abs * 0.7})`;
+        el.style.boxShadow = `0 0 ${abs * 10}px ${abs * 4}px rgba(16, 185, 129, 0.7)`;
+    } else {
+        el.style.backgroundColor = `rgba(239, 68, 68, ${0.3 + abs * 0.7})`;
+        el.style.boxShadow = `0 0 ${abs * 10}px ${abs * 4}px rgba(239, 68, 68, 0.7)`;
+    }
+}
+
 function simDigitalRead(varName) {
     printToConsole(`Digital Input "${varName}" read → false (simulated)`, false, 'sys');
     return false;
@@ -105,5 +121,7 @@ function stopSimulator() {
     simPixelBrightness = 0.3;
     simPixelRaw = [0, 0, 0];
     setPixelColor('rgb(0, 0, 0)');
+    setMotorState(1, 0);
+    setMotorState(2, 0);
     printToConsole("--- Simulator Stopped ---", false, 'sys');
 }

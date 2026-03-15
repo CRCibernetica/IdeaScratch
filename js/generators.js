@@ -186,7 +186,7 @@ javascript.javascriptGenerator.forBlock['ib_arcoiris'] = function(block) {
 javascript.javascriptGenerator.forBlock['ib_motors'] = function(block) {
     const m1 = block.getFieldValue('MOTOR1');
     const m2 = block.getFieldValue('MOTOR2');
-    return `printToConsole('Motor 1: ${m1}  Motor 2: ${m2}', false, 'sys');\n`;
+    return `setMotorState(1, ${m1});\nsetMotorState(2, ${m2});\n`;
 };
 javascript.javascriptGenerator.forBlock['ib_event_handler'] = function(block) {
     const branch = javascript.javascriptGenerator.statementToCode(block, 'DO');

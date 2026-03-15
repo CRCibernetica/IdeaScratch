@@ -75,6 +75,20 @@ h2 {
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); z-index: 10;
 }
 
+#sim-motor1, #sim-motor2 {
+    position: absolute;
+    width: 5.81%;
+    height: 7.34%;
+    transform: translate(-50%, -50%);
+    border-radius: 3px;
+    background-color: rgba(0, 0, 0, 0.15);
+    transition: all 0.15s ease-in-out;
+    z-index: 10;
+    pointer-events: none;
+}
+#sim-motor1 { top: 38.12%; left: 90.96%; }
+#sim-motor2 { top: 38.12%; left: 9.81%; }
+
 #sim-boot-hitbox {
     position: absolute; top: 16.7%; left: 93.1%; width: 20px; height: 32px;
     transform: translate(-50%, -50%); border-radius: 4px; cursor: pointer; z-index: 20;
