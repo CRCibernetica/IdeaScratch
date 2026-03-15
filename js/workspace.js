@@ -1,9 +1,25 @@
 // --- WORKSPACE INITIALIZATION ---
+const darkTheme = Blockly.Theme.defineTheme('ideaScratchDark', {
+    base: Blockly.Themes.Zelos,
+    componentStyles: {
+        workspaceBackgroundColour: '#1e1e2e',
+        toolboxBackgroundColour: '#252540',
+        toolboxForegroundColour: '#e2e8f0',
+        flyoutBackgroundColour: '#2d2d3a',
+        flyoutForegroundColour: '#e2e8f0',
+        flyoutOpacity: 1,
+        scrollbarColour: '#4b5563',
+        scrollbarOpacity: 0.5,
+        insertionMarkerColour: '#7c3aed',
+        insertionMarkerOpacity: 0.5,
+    }
+});
+
 const workspace = Blockly.inject('blocklyDiv', {
     toolbox: document.getElementById('toolbox'),
     renderer: 'thrasos',
-    theme: Blockly.Themes.Zelos,
-    grid: {spacing: 20, length: 3, colour: '#ccc', snap: true},
+    theme: darkTheme,
+    grid: {spacing: 20, length: 3, colour: '#2d2d3a', snap: true},
     trashcan: true
 });
 
