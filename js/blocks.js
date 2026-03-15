@@ -55,9 +55,10 @@ Blockly.common.defineBlocksWithJsonArray([
         "type": "ib_motors",
         "message0": "Set Motors  Motor 1 %1  Motor 2 %2",
         "args0": [
-            {"type": "field_number", "name": "MOTOR1", "value": 0, "min": -1, "max": 1, "precision": 0.01},
-            {"type": "field_number", "name": "MOTOR2", "value": 0, "min": -1, "max": 1, "precision": 0.01}
+            {"type": "input_value", "name": "MOTOR1", "check": "Number"},
+            {"type": "input_value", "name": "MOTOR2", "check": "Number"}
         ],
+        "inputsInline": true,
         "previousStatement": null,
         "nextStatement": null,
         "colour": 230,

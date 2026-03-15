@@ -101,8 +101,8 @@ python.pythonGenerator.forBlock['ib_arcoiris'] = function(block) {
 };
 
 python.pythonGenerator.forBlock['ib_motors'] = function(block) {
-    const m1 = block.getFieldValue('MOTOR1');
-    const m2 = block.getFieldValue('MOTOR2');
+    const m1 = python.pythonGenerator.valueToCode(block, 'MOTOR1', python.Order.NONE) || '0';
+    const m2 = python.pythonGenerator.valueToCode(block, 'MOTOR2', python.Order.NONE) || '0';
     return `ib.motor_1.throttle = ${m1}\nib.motor_2.throttle = ${m2}\n`;
 };
 
@@ -187,8 +187,8 @@ javascript.javascriptGenerator.forBlock['ib_arcoiris'] = function(block) {
     return `setPixelColor(colorwheel(${v}));\n`;
 };
 javascript.javascriptGenerator.forBlock['ib_motors'] = function(block) {
-    const m1 = block.getFieldValue('MOTOR1');
-    const m2 = block.getFieldValue('MOTOR2');
+    const m1 = javascript.javascriptGenerator.valueToCode(block, 'MOTOR1', javascript.Order.NONE) || '0';
+    const m2 = javascript.javascriptGenerator.valueToCode(block, 'MOTOR2', javascript.Order.NONE) || '0';
     return `setMotorState(1, ${m1});\nsetMotorState(2, ${m2});\n`;
 };
 javascript.javascriptGenerator.forBlock['ib_event_handler'] = function(block) {
