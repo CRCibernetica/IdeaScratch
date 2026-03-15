@@ -22,6 +22,13 @@ python.pythonGenerator.forBlock['ib_event_state'] = function(block) {
     return [`event.${state}`, python.Order.ATOMIC];
 };
 
+python.pythonGenerator.forBlock['ib_brightness'] = function(block) {
+    return `ib.brightness = ${block.getFieldValue('BRIGHTNESS')}\n`;
+};
+python.pythonGenerator.forBlock['ib_arcoiris'] = function(block) {
+    return `ib.arcoiris = ${block.getFieldValue('VALUE')}\n`;
+};
+
 python.pythonGenerator.forBlock['ib_motors'] = function(block) {
     const m1 = block.getFieldValue('MOTOR1');
     const m2 = block.getFieldValue('MOTOR2');
@@ -38,6 +45,14 @@ javascript.javascriptGenerator.forBlock['time_sleep'] = function(block) {
 javascript.javascriptGenerator.forBlock['controls_forever'] = function(block) {
     const branch = javascript.javascriptGenerator.statementToCode(block, 'DO');
     return `while (simIsRunning) {\n${branch}\n  await simSleep(20);\n}\n`;
+};
+javascript.javascriptGenerator.forBlock['ib_brightness'] = function(block) {
+    const b = block.getFieldValue('BRIGHTNESS');
+    return `setPixelBrightness(${b});\n`;
+};
+javascript.javascriptGenerator.forBlock['ib_arcoiris'] = function(block) {
+    const v = block.getFieldValue('VALUE');
+    return `setPixelColor(colorwheel(${v}));\n`;
 };
 javascript.javascriptGenerator.forBlock['ib_motors'] = function(block) {
     const m1 = block.getFieldValue('MOTOR1');

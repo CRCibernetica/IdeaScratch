@@ -1,17 +1,37 @@
 // --- SIMULATOR & CONSOLE LOGIC ---
 let simIsRunning = false;
 let simEventQueue = [];
+let simPixelBrightness = 0.3;
+let simPixelRaw = [0, 0, 0];
 
 function simSleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
+function colorwheel(pos) {
+    pos = Math.round(pos) & 0xFF;
+    if (pos < 85) return `rgb(${255 - pos * 3}, ${pos * 3}, 0)`;
+    if (pos < 170) { pos -= 85; return `rgb(0, ${255 - pos * 3}, ${pos * 3})`; }
+    pos -= 170; return `rgb(${pos * 3}, 0, ${255 - pos * 3})`;
+}
+
+function setPixelBrightness(b) {
+    simPixelBrightness = Math.max(0, Math.min(1, b));
+    setPixelColor(`rgb(${simPixelRaw.join(', ')})`);
+}
+
 function setPixelColor(rgbString) {
+    const match = rgbString.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    if (match) simPixelRaw = [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
+    const r = Math.round(simPixelRaw[0] * simPixelBrightness);
+    const g = Math.round(simPixelRaw[1] * simPixelBrightness);
+    const b = Math.round(simPixelRaw[2] * simPixelBrightness);
+    const dimmed = `rgb(${r}, ${g}, ${b})`;
     const pixel = document.getElementById('sim-pixel');
-    if (rgbString === 'rgb(0, 0, 0)') {
+    if (r === 0 && g === 0 && b === 0) {
         pixel.style.backgroundColor = 'rgba(0,0,0,0.5)';
         pixel.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.5)';
     } else {
-        pixel.style.backgroundColor = rgbString;
-        pixel.style.boxShadow = `0 0 15px 5px ${rgbString}, inset 0 0 5px white`;
+        pixel.style.backgroundColor = dimmed;
+        pixel.style.boxShadow = `0 0 15px 5px ${dimmed}, inset 0 0 5px white`;
     }
 }
 
@@ -72,6 +92,8 @@ async function runSimulator() {
 
 function stopSimulator() {
     simIsRunning = false;
+    simPixelBrightness = 0.3;
+    simPixelRaw = [0, 0, 0];
     setPixelColor('rgb(0, 0, 0)');
     printToConsole("--- Simulator Stopped ---", false, 'sys');
 }

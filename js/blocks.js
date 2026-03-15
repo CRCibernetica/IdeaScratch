@@ -57,6 +57,28 @@ Blockly.common.defineBlocksWithJsonArray([
         "tooltip": "Set motor speed: 1.0 = full forward, -1.0 = full reverse, 0 = brake"
     },
     {
+        "type": "ib_brightness",
+        "message0": "Set Pixel Brightness %1",
+        "args0": [
+            {"type": "field_number", "name": "BRIGHTNESS", "value": 0.3, "min": 0, "max": 1, "precision": 0.01}
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 230,
+        "tooltip": "Set pixel brightness: 0.0 = off, 1.0 = full brightness"
+    },
+    {
+        "type": "ib_arcoiris",
+        "message0": "Set Pixel Rainbow Color %1",
+        "args0": [
+            {"type": "field_number", "name": "VALUE", "value": 0, "min": 0, "max": 255, "precision": 1}
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 230,
+        "tooltip": "Set pixel color using colorwheel: 0-255"
+    },
+    {
         "type": "ib_event_state",
         "message0": "Event is %1",
         "args0": [
