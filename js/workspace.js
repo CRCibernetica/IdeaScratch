@@ -1,14 +1,14 @@
 // --- WORKSPACE INITIALIZATION ---
-const darkTheme = Blockly.Theme.defineTheme('ideaScratchDark', {
+const ideaTheme = Blockly.Theme.defineTheme('ideaScratch', {
     base: Blockly.Themes.Zelos,
     componentStyles: {
-        workspaceBackgroundColour: '#1e1e2e',
-        toolboxBackgroundColour: '#252540',
-        toolboxForegroundColour: '#e2e8f0',
-        flyoutBackgroundColour: '#2d2d3a',
-        flyoutForegroundColour: '#e2e8f0',
+        workspaceBackgroundColour: '#f9f9f9',
+        toolboxBackgroundColour: '#ffffff',
+        toolboxForegroundColour: '#575e75',
+        flyoutBackgroundColour: '#e9e9e9',
+        flyoutForegroundColour: '#575e75',
         flyoutOpacity: 1,
-        scrollbarColour: '#4b5563',
+        scrollbarColour: '#aaaaaa',
         scrollbarOpacity: 0.5,
         insertionMarkerColour: '#7c3aed',
         insertionMarkerOpacity: 0.5,
@@ -18,8 +18,8 @@ const darkTheme = Blockly.Theme.defineTheme('ideaScratchDark', {
 const workspace = Blockly.inject('blocklyDiv', {
     toolbox: document.getElementById('toolbox'),
     renderer: 'thrasos',
-    theme: darkTheme,
-    grid: {spacing: 20, length: 3, colour: '#2d2d3a', snap: true},
+    theme: ideaTheme,
+    grid: {spacing: 20, length: 3, colour: '#e0e0e0', snap: true},
     trashcan: true
 });
 

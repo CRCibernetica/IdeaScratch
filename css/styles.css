@@ -118,7 +118,7 @@ button.hw-btn:disabled { background: #374151 !important; opacity: 0.4; cursor: n
 
 #blocklyDiv {
     flex: 1; border: none; border-radius: 10px;
-    background: #1e1e2e; overflow: hidden;
+    background: #f9f9f9; overflow: hidden;
 }
 
 .code-container {
