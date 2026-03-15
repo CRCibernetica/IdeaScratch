@@ -40,6 +40,9 @@ workspace.addChangeListener(() => {
 
     const hasMotors = workspace.getBlocksByType('ib_motors', true).length > 0;
     document.getElementById('sim-motors').style.display = hasMotors ? 'flex' : 'none';
+
+    const hasServos = workspace.getBlocksByType('ib_servo_setup', true).length > 0;
+    document.getElementById('sim-servos').style.display = hasServos ? 'flex' : 'none';
 });
 
 // Fix Blockly Resize Bug — forces Blockly to redraw when panels are opened/closed or window resizes

@@ -39,23 +39,35 @@ const simServoMap = {};
 
 function simServoSetup(varName, pin) {
     simServoMap[varName] = pin;
-    const id = 'sim-servo-' + pin.replace('board.', '').toLowerCase();
-    const el = document.getElementById(id);
-    if (el) {
-        el.classList.add('active');
-        el.querySelector('.servo-angle').textContent = '90°';
+
+    // highlight overlay
+    const overlayEl = document.getElementById('sim-servo-' + pin.replace('board.', '').toLowerCase());
+    if (overlayEl) overlayEl.classList.add('active');
+
+    // create status bar row if not already present
+    const panel = document.getElementById('sim-servos');
+    const rowId = 'sim-servo-row-' + varName;
+    if (!document.getElementById(rowId)) {
+        const row = document.createElement('div');
+        row.className = 'sim-motor-row';
+        row.id = rowId;
+        row.innerHTML = `
+            <span class="sim-motor-label" style="width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${varName}">${varName}</span>
+            <div class="sim-motor-bar-wrap">
+                <div class="sim-motor-bar" id="sim-servo-bar-${varName}" style="left:0%;width:0%;background:#8b5cf6"></div>
+            </div>
+            <span class="sim-motor-value" id="sim-servo-val-${varName}" style="color:#8b5cf6">90°</span>`;
+        panel.appendChild(row);
     }
-    printToConsole(`Servo "${varName}" ready on ${pin}`, false, 'sys');
+    simServoAngle(varName, 90);
 }
 
 function simServoAngle(varName, angle) {
-    const pin = simServoMap[varName];
-    if (pin) {
-        const id = 'sim-servo-' + pin.replace('board.', '').toLowerCase();
-        const el = document.getElementById(id);
-        if (el) el.querySelector('.servo-angle').textContent = Math.round(angle) + '°';
-    }
-    printToConsole(`Servo "${varName}" → ${angle}°`, false, 'sys');
+    const a = Math.max(0, Math.min(180, parseFloat(angle)));
+    const bar = document.getElementById(`sim-servo-bar-${varName}`);
+    const val = document.getElementById(`sim-servo-val-${varName}`);
+    if (bar) bar.style.width = `${(a / 180) * 100}%`;
+    if (val) val.textContent = Math.round(a) + '°';
 }
 
 function setMotorState(motorNum, throttle) {
@@ -180,9 +192,7 @@ function stopSimulator() {
     setMotorState(1, 0);
     setMotorState(2, 0);
     Object.keys(simServoMap).forEach(k => delete simServoMap[k]);
-    document.querySelectorAll('.sim-servo-overlay').forEach(el => {
-        el.classList.remove('active');
-        el.querySelector('.servo-angle').textContent = '';
-    });
+    document.querySelectorAll('.sim-servo-overlay').forEach(el => el.classList.remove('active'));
+    document.getElementById('sim-servos').innerHTML = '';
     printToConsole("--- Simulator Stopped ---", false, 'sys');
 }
