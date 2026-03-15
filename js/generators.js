@@ -128,12 +128,12 @@ javascript.javascriptGenerator.forBlock['controls_forever'] = function(block) {
 javascript.javascriptGenerator.forBlock['ib_servo_setup'] = function(block) {
     const varName = block.getFieldValue('SERVO_VAR');
     const pin = block.getFieldValue('PIN');
-    return `printToConsole('Servo "${varName}" ready on ${pin}', false, 'sys');\n`;
+    return `simServoSetup('${varName}', '${pin}');\n`;
 };
 javascript.javascriptGenerator.forBlock['ib_servo_angle'] = function(block) {
     const varName = block.getFieldValue('SERVO_VAR');
     const angle = javascript.javascriptGenerator.valueToCode(block, 'ANGLE', javascript.Order.NONE) || '90';
-    return `printToConsole('Servo "${varName}" → ' + (${angle}) + '°', false, 'sys');\n`;
+    return `simServoAngle('${varName}', ${angle});\n`;
 };
 javascript.javascriptGenerator.forBlock['ib_digital_in_setup'] = function(block) {
     const varName = block.getFieldValue('PIN_VAR');

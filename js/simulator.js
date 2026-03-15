@@ -35,6 +35,29 @@ function setPixelColor(rgbString) {
     }
 }
 
+const simServoMap = {};
+
+function simServoSetup(varName, pin) {
+    simServoMap[varName] = pin;
+    const id = 'sim-servo-' + pin.replace('board.', '').toLowerCase();
+    const el = document.getElementById(id);
+    if (el) {
+        el.classList.add('active');
+        el.querySelector('.servo-angle').textContent = '90°';
+    }
+    printToConsole(`Servo "${varName}" ready on ${pin}`, false, 'sys');
+}
+
+function simServoAngle(varName, angle) {
+    const pin = simServoMap[varName];
+    if (pin) {
+        const id = 'sim-servo-' + pin.replace('board.', '').toLowerCase();
+        const el = document.getElementById(id);
+        if (el) el.querySelector('.servo-angle').textContent = Math.round(angle) + '°';
+    }
+    printToConsole(`Servo "${varName}" → ${angle}°`, false, 'sys');
+}
+
 function setMotorState(motorNum, throttle) {
     const t = Math.max(-1, Math.min(1, parseFloat(throttle)));
     const abs = Math.abs(t);
@@ -156,5 +179,10 @@ function stopSimulator() {
     setPixelColor('rgb(0, 0, 0)');
     setMotorState(1, 0);
     setMotorState(2, 0);
+    Object.keys(simServoMap).forEach(k => delete simServoMap[k]);
+    document.querySelectorAll('.sim-servo-overlay').forEach(el => {
+        el.classList.remove('active');
+        el.querySelector('.servo-angle').textContent = '';
+    });
     printToConsole("--- Simulator Stopped ---", false, 'sys');
 }
